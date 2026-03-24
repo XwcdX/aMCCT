@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  aMCCT
-//
-//  Created by Terry Clement on 22/03/26.
-//
-
 import SwiftUI
 
 struct ContentView: View {

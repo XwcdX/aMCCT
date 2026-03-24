@@ -1,0 +1,22 @@
+# Xcode
+build/
+DerivedData/
+*.hmap
+*.ipa
+*.playground.xcworkspace
+xcuserdata/
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Packages/
+Package.pins
+Package.resolved
+
+# macOS
+.DS_Store
+*.swp
+profile
+
+# App Groups / Entitlements local noise
+*.ext.entitlements
