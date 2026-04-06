@@ -4,18 +4,29 @@ import SwiftData
 @Model final class StoreItem {
     var id: String
     var type: StoreItemType
+    var name: String
+    var itemDescription: String
+    var assetName: String
     var price: Int
     var isPurchased: Bool
-    var isEquipped: Bool
     var purchasedAt: Date?
 
-    init(id: String, type: StoreItemType, price: Int) {
-        self.id          = id
-        self.type        = type
-        self.price       = price
-        self.isPurchased = false
-        self.isEquipped  = false
-        self.purchasedAt = nil
+    init(
+        id: String,
+        type: StoreItemType,
+        price: Int,
+        name: String,
+        description: String,
+        assetName: String
+    ) {
+        self.id              = id
+        self.type            = type
+        self.price           = price
+        self.name            = name
+        self.itemDescription = description
+        self.assetName       = assetName
+        self.isPurchased     = false
+        self.purchasedAt     = nil
     }
 }
 
@@ -26,13 +37,17 @@ enum StoreItemType: String, Codable, CaseIterable, Sendable {
 
     var displayName: String {
         switch self {
-        case .sticker:       return "Sticker"
-        case .brainSkin:     return "Brain Skin"
-        case .profileBorder: return "Profile Border"
+        case .sticker:       return "Stickers"
+        case .brainSkin:     return "Brain Skins"
+        case .profileBorder: return "Profile Borders"
         }
     }
 
-    var slotIsExclusive: Bool {
-        return true
+    var icon: String {
+        switch self {
+        case .sticker:       return "face.smiling"
+        case .brainSkin:     return "cube.transparent"
+        case .profileBorder: return "circle.dotted"
+        }
     }
 }

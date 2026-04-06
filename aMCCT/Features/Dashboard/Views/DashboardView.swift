@@ -11,20 +11,24 @@ struct DashboardView: View {
 
             VStack(spacing: 0) {
                 topBar
+                
                 BrainSceneView(strength: viewModel.brainStrength)
                     .frame(maxWidth: .infinity)
-                    .frame(height: geo.size.height * 0.45)
+                    .frame(height: geo.size.height * 0.42)
 
                 statsStrip
                     .padding(.horizontal, 20)
                     .padding(.top, 8)
-
-                levelControls
-                    .padding(.horizontal, 20)
-                    .padding(.top, 16)
-
-                Spacer()
+                
+//                levelControls
+//                    .padding(.horizontal, 20)
+//                    .padding(.top, 16)
+                
+                StoreView()
+                    .environment(viewModel)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+            .onAppear { viewModel.load() }
         }
         }
         .sheet(isPresented: Binding(
@@ -54,6 +58,7 @@ struct DashboardView: View {
                 .foregroundStyle(.white)
 
             Spacer()
+            
             Button {
                 viewModel.isSettingsPresented = true
             } label: {
@@ -72,7 +77,7 @@ struct DashboardView: View {
         .padding(.top, 12)
         .padding(.bottom, 8)
     }
-
+    
     private var statsStrip: some View {
         HStack(spacing: 0) {
             statCell(
@@ -194,12 +199,10 @@ struct DashboardView: View {
 
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    // Track
                     RoundedRectangle(cornerRadius: 4)
                         .fill(Color.white.opacity(0.08))
                         .frame(height: 6)
 
-                    // Actual level marker
                     RoundedRectangle(cornerRadius: 4)
                         .fill(Color.cyan.opacity(0.35))
                         .frame(
@@ -207,7 +210,6 @@ struct DashboardView: View {
                             height: 6
                         )
 
-                    // Current level fill
                     RoundedRectangle(cornerRadius: 4)
                         .fill(
                             LinearGradient(

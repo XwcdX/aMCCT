@@ -7,7 +7,6 @@ final class DashboardViewModel {
     var brainState: BrainState?
     var isSettingsPresented: Bool = false
     var isDecreaseConfirmPresented: Bool = false
-    
     private let modelContext: ModelContext
     
     init(modelContext: ModelContext) {
@@ -24,7 +23,18 @@ final class DashboardViewModel {
             try? modelContext.save()
             brainState = fresh
         }
+        StoreSeeder.seed(context: modelContext)
         resetDailyCountersIfNeeded()
+    }
+
+    func purchaseItem(_ item: StoreItem) {
+        guard let state = brainState else { return }
+        guard !item.isPurchased else { return }
+        guard state.spendablePoints >= item.price else { return }
+        state.spendablePoints -= item.price
+        item.isPurchased = true
+        item.purchasedAt = .now
+        save()
     }
 
     var brainStrength: Double {

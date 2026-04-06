@@ -159,7 +159,7 @@ struct BrainSceneView: View {
 
         amccNodes.forEach { node in
             styleaMCC(node: node, strength: strength)
-            let s = Float(1.0 + max(strength, 0.4) * 0.08)
+            let s = Float(1 + max(strength, 0.4) * 0.08)
             node.scale = SCNVector3(s, s, s)
         }
 
