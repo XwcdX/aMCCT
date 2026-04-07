@@ -1,22 +1,52 @@
-# Xcode
+# --------------------------------------------------
+# macOS metadata
+# --------------------------------------------------
+.DS_Store
+
+# --------------------------------------------------
+# Xcode user-specific files
+# Local UI state, breakpoints, and personal settings.
+# Do not share these in Git.
+# --------------------------------------------------
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+
+# User-specific data inside Xcode project/workspace bundles
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+
+# --------------------------------------------------
+# Build output
+# Generated locally by Xcode.
+# --------------------------------------------------
 build/
 DerivedData/
-*.hmap
+
+# --------------------------------------------------
+# App archives and debug symbol artifacts
+# --------------------------------------------------
 *.ipa
-*.playground.xcworkspace
-xcuserdata/
+*.dSYM
+*.dSYM.zip
 
-# Swift Package Manager
-.build/
-.swiftpm/
-Packages/
-Package.pins
-Package.resolved
+# --------------------------------------------------
+# Swift Playgrounds
+# --------------------------------------------------
+timeline.xctimeline
+playground.xcworkspace
 
-# macOS
-.DS_Store
+# --------------------------------------------------
+# Fastlane generated artifacts
+# --------------------------------------------------
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/
+fastlane/test_output/
+
+# --------------------------------------------------
+# Editor / temporary files
+# --------------------------------------------------
 *.swp
-profile
-
-# App Groups / Entitlements local noise
-*.ext.entitlements
+*.lock
