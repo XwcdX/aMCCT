@@ -223,3 +223,43 @@ struct StoreItemCard: View {
         }
     }
 }
+
+
+struct RewardsView: View {
+    
+    enum RewardType: String, CaseIterable {
+        case wallpaper = "Wallpaper"
+        case sticker = "Sticker"
+        case boosters = "Boosters"
+    }
+    
+    @State private var selectedType: RewardType = .wallpaper
+    
+    var body: some View {
+        VStack {
+            
+            
+            Picker("Reward Type", selection: $selectedType) {
+                ForEach(RewardType.allCases, id: \.self) { type in
+                    Text(type.rawValue)
+                }
+            }
+            .pickerStyle(.segmented)
+            .padding()
+        }
+    }
+    
+    @ViewBuilder
+    var contentView: some View {
+        switch selectedType {
+        case .wallpaper:
+            Text("Wallpaper Rewards")
+            
+        case .sticker:
+            Text("Sticker Rewards")
+            
+        case .boosters:
+            Text("Boosters Rewards")
+        }
+    }
+}
