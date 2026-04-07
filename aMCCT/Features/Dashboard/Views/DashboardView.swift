@@ -53,9 +53,15 @@ struct DashboardView: View {
 
     private var topBar: some View {
         HStack {
-            Text("aMCCT")
-                .font(.system(size: 18, weight: .semibold, design: .rounded))
-                .foregroundStyle(.white)
+            VStack{
+                Text("Hardway")
+                    .font(.system(size: 25, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.white)
+            
+                Text("Your aMCC Brain")
+                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.white)
+            }
 
             Spacer()
             
