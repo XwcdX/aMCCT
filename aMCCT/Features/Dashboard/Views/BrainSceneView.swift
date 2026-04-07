@@ -1,3 +1,5 @@
+// brainscene
+
 import SwiftUI
 import SceneKit
 
@@ -83,7 +85,7 @@ struct BrainSceneView: View {
                 styleaMCC(node: node, strength: strength)
             } else if cortexNodeNames.contains(name) {
                 node.geometry?.materials.forEach {
-                    $0.diffuse.contents = UIColor.white.withAlphaComponent(0.06)
+                    $0.diffuse.contents = UIColor.white.withAlphaComponent(9)
                     $0.emission.contents = UIColor.clear
                     $0.isDoubleSided = true
                     $0.blendMode = .alpha
@@ -91,7 +93,7 @@ struct BrainSceneView: View {
                 }
             } else {
                 node.geometry?.materials.forEach {
-                    $0.diffuse.contents = UIColor(white: 0.7, alpha: 0.85)
+                    $0.diffuse.contents = UIColor(white: 0, alpha: 2)
                     $0.emission.contents = UIColor.clear
                     $0.isDoubleSided = true
                     $0.blendMode = .alpha
@@ -154,12 +156,12 @@ struct BrainSceneView: View {
 
     private func updateaMCC(strength: Double) {
         SCNTransaction.begin()
-        SCNTransaction.animationDuration = 0.8
+        SCNTransaction.animationDuration = 2
         SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
 
         amccNodes.forEach { node in
             styleaMCC(node: node, strength: strength)
-            let s = Float(1.0 + max(strength, 0.4) * 0.08)
+            let s = Float(1 + max(strength, 0) * 0)
             node.scale = SCNVector3(s, s, s)
         }
 
