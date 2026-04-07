@@ -1,8 +1,6 @@
 import SwiftUI
 import SwiftData
 
-// Features/Dashboard/Views/StoreView.swift
-
 struct StoreView: View {
 
     @Environment(DashboardViewModel.self) private var viewModel
