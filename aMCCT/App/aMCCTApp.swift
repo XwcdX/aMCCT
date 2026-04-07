@@ -5,6 +5,8 @@ import SwiftData
 struct aMCCTApp: App {
     let container: ModelContainer
     @State private var appEnvironment: AppEnvironment
+    
+    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding: Bool = false
 
     init() {
         do {
@@ -21,6 +23,13 @@ struct aMCCTApp: App {
             DashboardView()
                 .environment(appEnvironment.dashboardViewModel)
                 .modelContainer(container)
+                .sheet(isPresented: .init(
+                    get: { !hasSeenOnboarding },
+                    set: { _ in }
+                )) {
+                    OnboardingView(hasSeenOnboarding: $hasSeenOnboarding)
+                        .interactiveDismissDisabled()
+                }
         }
     }
 }
