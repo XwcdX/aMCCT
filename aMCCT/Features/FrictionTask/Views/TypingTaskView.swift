@@ -32,6 +32,7 @@ final class TypingFrictionManager: ObservableObject {
 }
 
 // MARK: - AI
+
 private extension TypingFrictionManager {
     func generatePrompt() async {
         guard SystemLanguageModel.default.isAvailable else {
@@ -83,6 +84,7 @@ private extension TypingFrictionManager {
 }
 
 // MARK: - Typing Logic
+
 private extension TypingFrictionManager {
     func matches(_ target: String, _ typed: String) -> Bool {
         let t = Array(target)
@@ -112,6 +114,7 @@ private extension TypingFrictionManager {
 }
 
 // MARK: - Hidden Input
+
 struct HiddenTextView: UIViewRepresentable {
     @Binding var text: String
     @Binding var isFocused: Bool
@@ -185,6 +188,7 @@ struct HiddenTextView: UIViewRepresentable {
 }
 
 // MARK: - View
+
 struct TypingTaskView: View {
     @StateObject private var vm = TypingFrictionManager()
     @State private var focus = false

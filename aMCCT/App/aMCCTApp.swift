@@ -23,7 +23,7 @@ struct aMCCTApp: App {
             DashboardView()
                 .environment(appEnvironment.dashboardViewModel)
                 .modelContainer(container)
-                .sheet(isPresented: .init(
+                .fullScreenCover(isPresented: .init(
                     get: { !hasSeenOnboarding },
                     set: { _ in }
                 )) {
