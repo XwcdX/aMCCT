@@ -1,310 +1,159 @@
 import SwiftUI
-import FoundationModels
-import Combine
-
-@MainActor
-final class TypingFrictionManager: ObservableObject {
-    @Published var prompt = ""
-    @Published var input = ""
-    @Published var isDone = false
-    @Published var isLoading = true
-
-    private let fallback = [
-        "I am choosing distraction over discipline",
-        "This scroll is stealing my real progress",
-        "I finish this before I escape again"
-    ]
-
-    init() {
-        prompt = fallback.randomElement()!
-        Task { await generatePrompt() }
-    }
-
-    func handleInput(_ value: String) {
-        let trimmed = String(value.prefix(prompt.count))
-        input = trimmed
-        
-        guard trimmed.count == prompt.count else { return }
-        guard matches(prompt, trimmed) else { return }
-        
-        isDone = true
-    }
-}
-
-// MARK: - AI
-
-private extension TypingFrictionManager {
-    func generatePrompt() async {
-        guard SystemLanguageModel.default.isAvailable else {
-            finish()
-            return
-        }
-
-        do {
-            let session = createSession()
-            let response = try await session.respond(
-                to: "Output one short sentence now.",
-                options: .init(maximumResponseTokens: 30)
-            )
-
-            let text = cleanResponse(response.content)
-            prompt = text.isEmpty ? fallback.randomElement()! : text
-
-        } catch {
-            print("LLM Error:", error.localizedDescription)
-        }
-
-        finish()
-    }
-
-    func createSession() -> LanguageModelSession {
-        let lang = Locale.current.language.languageCode?.identifier ?? "English"
-        
-        return LanguageModelSession(
-            instructions: """
-            Output ONE sentence, under 10 words.
-            Language: \(lang)
-            No emoji, no punctuation, no explanation.
-            Make it guilt-inducing.
-            """
-        )
-    }
-
-    func cleanResponse(_ text: String) -> String {
-        text
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .components(separatedBy: "\n")
-            .first ?? ""
-    }
-
-    func finish() {
-        input = ""
-        isLoading = false
-    }
-}
-
-// MARK: - Typing Logic
-
-private extension TypingFrictionManager {
-    func matches(_ target: String, _ typed: String) -> Bool {
-        let t = Array(target)
-        let u = Array(typed)
-
-        for i in 0..<t.count {
-            if !charMatch(t[i], u[i]) { return false }
-        }
-        return true
-    }
-
-    func charMatch(_ a: Character, _ b: Character) -> Bool {
-        if a == b { return true }
-
-        let map: [Character: Character] = [
-            "’": "'", "‘": "'", "”": "\"", "“": "\""
-        ]
-
-        let na = map[a] ?? a
-        let nb = map[b] ?? b
-
-        if na == nb { return true }
-
-        return String(a).precomposedStringWithCanonicalMapping ==
-               String(b).precomposedStringWithCanonicalMapping
-    }
-}
-
-// MARK: - Hidden Input
-
-struct HiddenTextView: UIViewRepresentable {
-    @Binding var text: String
-    @Binding var isFocused: Bool
-
-    func makeUIView(context: Context) -> UITextView {
-        let v = UITextView()
-
-        v.textColor = .clear
-        v.tintColor = .clear
-        v.backgroundColor = .clear
-
-        v.autocorrectionType = .no
-        v.spellCheckingType = .no
-        v.smartQuotesType = .no
-        v.smartDashesType = .no
-        v.smartInsertDeleteType = .no
-        v.autocapitalizationType = .none
-
-        v.inputAssistantItem.leadingBarButtonGroups = []
-        v.inputAssistantItem.trailingBarButtonGroups = []
-
-        v.font = .systemFont(ofSize: 22, weight: .bold)
-        v.isScrollEnabled = false
-        v.textContainerInset = .zero
-        v.textContainer.lineFragmentPadding = 0
-
-        v.isSelectable = false
-        v.isEditable = true
-
-        v.delegate = context.coordinator
-        return v
-    }
-
-    func updateUIView(_ uiView: UITextView, context: Context) {
-        if uiView.text != text {
-            uiView.text = text
-        }
-
-        if isFocused && !uiView.isFirstResponder {
-            DispatchQueue.main.async { uiView.becomeFirstResponder() }
-        } else if !isFocused && uiView.isFirstResponder {
-            DispatchQueue.main.async { uiView.resignFirstResponder() }
-        }
-    }
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator(self)
-    }
-
-    final class Coordinator: NSObject, UITextViewDelegate {
-        var parent: HiddenTextView
-
-        init(_ parent: HiddenTextView) {
-            self.parent = parent
-        }
-
-        func textViewDidChange(_ textView: UITextView) {
-            DispatchQueue.main.async {
-                self.parent.text = textView.text ?? ""
-            }
-        }
-
-        func textView(
-            _ textView: UITextView,
-            editMenuForTextIn range: NSRange,
-            suggestedActions: [UIMenuElement]
-        ) -> UIMenu? {
-            UIMenu(children: [])
-        }
-    }
-}
-
-// MARK: - View
 
 struct TypingTaskView: View {
-    @StateObject private var vm = TypingFrictionManager()
-    @State private var focus = false
+    @ObservedObject var viewModel: FrictionTaskViewModel
+    @State private var isFieldFocused = false
 
     var body: some View {
-        VStack(spacing: 30) {
+        VStack(spacing: 40) {
             Spacer()
 
-            Text("TRAIN YOUR MIND")
-                .font(.title.bold())
-                .foregroundColor(.secondary)
-
+            headerSection
+            
             ZStack {
-                typingField
-                    .opacity(vm.isLoading ? 0 : 1)
-                    .allowsHitTesting(!vm.isLoading)
-
-                if vm.isLoading {
-                    VStack {
-                        ProgressView()
-                        Text("Generating...")
-                            .font(.title2.bold())
-                            .foregroundColor(.secondary)
-                    }
+                if viewModel.isLoading {
+                    loadingState
+                } else {
+                    typingArea
                 }
             }
-            .frame(minHeight: 120)
-            .onChange(of: vm.isLoading) { _, loading in
-                if !loading {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        focus = true
-                    }
-                }
-            }
-
-            if vm.isDone {
-                Button("CONTINUE") {
-                    print("Unlocked")
-                }
-                .font(.title2.bold())
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(.blue)
-                .foregroundColor(.white)
-                .cornerRadius(12)
-                .padding(.horizontal, 40)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
-                .animation(.spring(), value: vm.isDone)
-            }
-
+            .frame(minHeight: 150)
+            
             Spacer()
-        }
-        .onChange(of: vm.isDone) { _, done in
-            if done {
-                focus = false
+            
+            if viewModel.isTaskComplete {
+                continueButton
             }
+        }
+        .padding(.horizontal, 24)
+        .onAppear { setupInitialState() }
+        .onChange(of: viewModel.isLoading) { _, loading in
+            handleLoadingChange(loading)
+        }
+        .onChange(of: viewModel.isTaskComplete) { _, complete in
+            if complete { isFieldFocused = false }
+        }
+    }
+}
+
+// MARK: - View Components
+private extension TypingTaskView {
+    
+    var headerSection: some View {
+        VStack(spacing: 8) {
+            Text("TRAIN YOUR MIND")
+                .font(.caption.bold())
+                .tracking(2)
+                .foregroundColor(.secondary)
+            
+            Text("Focus on every character")
+                .font(.subheadline)
+                .foregroundColor(.secondary.opacity(0.8))
         }
     }
 
-    private var typingField: some View {
-        let binding = Binding(
-            get: { vm.input },
-            set: { vm.handleInput($0) }
+    var typingArea: some View {
+        let textBinding = Binding(
+            get: { viewModel.currentTextEntry },
+            set: { viewModel.handleTypingInput($0) }
         )
 
         return ZStack {
-            Text(vm.prompt)
-                .font(.title2.bold())
-                .foregroundColor(.primary.opacity(0.2))
-                .lineSpacing(8)
-                .multilineTextAlignment(.center)
-
-            Text(renderedText)
+            Text(viewModel.targetPhrase)
                 .font(.title2.bold())
                 .lineSpacing(8)
                 .multilineTextAlignment(.center)
+                .foregroundColor(.primary.opacity(0.1))
 
-            HiddenTextView(text: binding, isFocused: $focus)
-                .frame(width: 1, height: 1)
-                .opacity(0.01)
+            Text(renderedProgressString)
+                .font(.title2.bold())
+                .lineSpacing(8)
+                .multilineTextAlignment(.center)
+
+            HiddenText(
+                text: textBinding,
+                isFocused: $isFieldFocused,
+                maxLength: viewModel.targetPhrase.count,
+                disableBackspace: viewModel.isBackspaceDisabled
+            )
+            .frame(width: 1, height: 1)
+            .opacity(0.01)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.horizontal, 24)
         .contentShape(Rectangle())
         .onTapGesture {
-            if !vm.isDone && !vm.isLoading {
-                focus = true
-            }
-        }
-        .transaction { t in
-            if vm.isDone {
-                t.animation = nil
+            if !viewModel.isTaskComplete && !viewModel.isLoading {
+                isFieldFocused = true
             }
         }
     }
 
-    private var renderedText: AttributedString {
-        let target = Array(vm.prompt)
-        let typed = Array(vm.input)
+    var loadingState: some View {
+        VStack(spacing: 16) {
+            ProgressView()
+                .scaleEffect(1.2)
+            Text("AI is generating friction...")
+                .font(.callout)
+                .foregroundColor(.secondary)
+        }
+        .transition(.opacity.combined(with: .scale(scale: 0.9)))
+    }
+
+    var continueButton: some View {
+        Button(action: {
+            print("Action: Task complete, unlocking app.")
+        }) {
+            Text("CONTINUE")
+                .font(.headline.bold())
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(Color.blue)
+                .cornerRadius(14)
+                .shadow(color: .blue.opacity(0.3), radius: 10, y: 5)
+        }
+        .padding(.bottom, 20)
+        .transition(.move(edge: .bottom).combined(with: .opacity))
+    }
+}
+
+// MARK: - Text Rendering Logic
+private extension TypingTaskView {
+    var renderedProgressString: AttributedString {
+        let targetChars = Array(viewModel.targetPhrase)
+        let typedChars = Array(viewModel.currentTextEntry)
         var result = AttributedString()
 
-        for i in 0..<target.count {
-            var char = AttributedString(String(target[i]))
+        for i in 0..<targetChars.count {
+            var char = AttributedString(String(targetChars[i]))
 
-            if i < typed.count {
-                let ok = vm.charMatch(target[i], typed[i])
-                char.foregroundColor = ok ? .primary : .red
-            } else if i == typed.count && !vm.isDone {
-                char.backgroundColor = .primary.opacity(0.2)
+            if i < typedChars.count {
+                let isMatch = viewModel.compareCharacters(targetChars[i], typedChars[i])
+                char.foregroundColor = isMatch ? .primary : .red
+            } else if i == typedChars.count && !viewModel.isTaskComplete {
+                char.backgroundColor = .primary.opacity(0.15)
+                char.foregroundColor = .primary.opacity(0.3)
             } else {
                 char.foregroundColor = .clear
             }
-
             result += char
         }
-
         return result
+    }
+}
+
+// MARK: - Lifecycle Helpers
+private extension TypingTaskView {
+    func setupInitialState() {
+        if !viewModel.isLoading {
+            isFieldFocused = true
+        }
+    }
+    
+    func handleLoadingChange(_ loading: Bool) {
+        if !loading {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                withAnimation { isFieldFocused = true }
+            }
+        }
     }
 }
