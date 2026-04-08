@@ -83,7 +83,7 @@ struct StoreView: View {
                 Image(systemName: "sparkle")
                     .font(.system(size: 12, weight: .bold))
                     .foregroundStyle(.yellow)
-                Text("\(viewModel.brainState?.spendablePoints ?? 0)")
+                Text("\(viewModel.brainState?.points ?? 0)")
                     .font(.system(size: 15, weight: .bold, design: .rounded))
                     .foregroundStyle(.yellow)
             }
@@ -119,7 +119,7 @@ struct StoreView: View {
                 ForEach(items, id: \.id) { item in
                     StoreItemCard(
                         item: item,
-                        spendablePoints: viewModel.brainState?.spendablePoints ?? 0,
+                        spendablePoints: viewModel.brainState?.points ?? 0,
                         onPurchase: { viewModel.purchaseItem(item) }
                     )
                 }
@@ -158,11 +158,13 @@ struct StoreItemCard: View {
                     .foregroundStyle(.white)
                     .lineLimit(1)
 
-                Text(item.itemDescription)
-                    .font(.system(size: 10))
-                    .foregroundStyle(.white.opacity(0.35))
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
+                if let description = item.itemDescription {
+                    Text(description)
+                        .font(.system(size: 10))
+                        .foregroundStyle(.white.opacity(0.35))
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
             .padding(.horizontal, 10)
             .padding(.top, 8)

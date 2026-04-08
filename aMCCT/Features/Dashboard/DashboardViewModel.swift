@@ -30,82 +30,102 @@ final class DashboardViewModel {
     func purchaseItem(_ item: StoreItem) {
         guard let state = brainState else { return }
         guard !item.isPurchased else { return }
-        guard state.spendablePoints >= item.price else { return }
-        state.spendablePoints -= item.price
+        guard state.points >= item.price else { return }
+        state.points -= item.price
         item.isPurchased = true
         item.purchasedAt = .now
         save()
     }
 
+    
+    /// Returns the total number of friction tasks successfully completed.
+    var totalFrictionsCount: Int {
+        let descriptor = FetchDescriptor<FrictionEvent>()
+        return (try? modelContext.fetchCount(descriptor)) ?? 0
+    }
+
+    /// Finds the App Token that the user attempts to open most frequently.
+    var culpritToken: Data? {
+        let descriptor = FetchDescriptor<FrictionEvent>()
+        guard let events = try? modelContext.fetch(descriptor) else { return nil }
+        
+        var frequencies: [Data: Int] = [:]
+        for event in events {
+            if let token = event.appTokenData {
+                frequencies[token, default: 0] += 1
+            }
+        }
+        
+        return frequencies.max(by: { $0.value < $1.value })?.key
+    }
+
     var brainStrength: Double {
         guard let state = brainState else { return 0.0 }
-        return Double(state.actualLevel) / Double(LevelConstants.actualLevelMax)
+        return Double(state.actualLevel) / Double(LevelConfig.actualLevelMax)
     }
 
     var currentLevelFraction: Double {
         guard let state = brainState else { return 0.0 }
-        return Double(state.currentLevel) / Double(LevelConstants.currentLevelMax)
+        let absoluteMax = Double(LevelConfig.actualLevelMax + LevelConfig.currentLevelMaxOffset)
+        return Double(state.currentLevel) / absoluteMax
     }
 
     var actualLevelFraction: Double {
         guard let state = brainState else { return 0.0 }
-        return Double(state.actualLevel) / Double(LevelConstants.actualLevelMax)
+        return Double(state.actualLevel) / Double(LevelConfig.actualLevelMax)
     }
 
     var canDecreaseToday: Bool {
         guard let state = brainState else { return false }
-        return state.dailyLevelDecreaseCount < LevelConstants.dailyDecreaseLimit
+        return state.dailyLevelDecreaseCount < LevelConfig.dailyDecreaseLimit
             && state.actualLevel > 1
     }
 
     var dailyCapsDescription: String {
         guard let state = brainState else { return "" }
-        let decreasesLeft = LevelConstants.dailyDecreaseLimit - state.dailyLevelDecreaseCount
-        let increaseCapRemaining = LevelConstants.dailyIncreaseLimit(actual: state.actualLevel) - state.currentLevel
+        let decreasesLeft = LevelConfig.dailyDecreaseLimit - state.dailyLevelDecreaseCount
+        
+        let maxAllowedToday = LevelRules.dailyIncreaseLimit(actual: state.actualLevel)
+        let increaseCapRemaining = maxAllowedToday - state.currentLevel
+        
         return "Decreases left today: \(max(decreasesLeft, 0))  ·  Level headroom: \(max(increaseCapRemaining, 0))"
     }
-
-    func recordFrictionCompleted() {
+    
+    /// Called when any friction task (Typing, Hold, etc.) is finished.
+    func recordFrictionCompleted(appTokenData: Data? = nil, taskType: String = "typing") {
         guard let state = brainState else { return }
         resetDailyCountersIfNeeded()
 
-        let dailyCap = LevelConstants.dailyIncreaseLimit(actual: state.actualLevel)
+        let dailyCap = LevelRules.dailyIncreaseLimit(actual: state.actualLevel)
+        let maxCurrentAllowed = LevelRules.currentLevelMax(actual: state.actualLevel)
 
-        if state.currentLevel < dailyCap && state.currentLevel < LevelConstants.currentLevelMax {
+        if state.currentLevel < dailyCap && state.currentLevel < maxCurrentAllowed {
             state.currentLevel += 1
             state.dailyLevelIncreaseCount += 1
 
             let gap = state.currentLevel - state.actualLevel
-            if gap > LevelConstants.increaseThreshold {
+            if gap > LevelConfig.increaseThreshold {
                 state.actualLevel = min(
-                    state.currentLevel - LevelConstants.increaseThreshold,
-                    LevelConstants.actualLevelMax
+                    state.currentLevel - LevelConfig.increaseThreshold,
+                    LevelConfig.actualLevelMax
                 )
             }
         }
 
         let earned = state.actualLevel
-        state.totalPoints += earned
-        state.spendablePoints += earned
-
-        let today = Calendar.current.startOfDay(for: .now)
-        if let last = state.lastFrictionDate,
-           Calendar.current.isDate(last, inSameDayAs: today) {
-            state.currentStreak += 1
-        } else if let last = state.lastFrictionDate,
-                  let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: today),
-                  Calendar.current.isDate(last, inSameDayAs: yesterday) {
-            state.currentStreak += 1
-        } else {
-            state.currentStreak = 1
-        }
-        state.longestStreak = max(state.longestStreak, state.currentStreak)
-        state.lastFrictionDate = .now
-        state.totalFrictions += 1
+        state.points += earned
+        
+        let event = FrictionEvent(
+            appTokenData: appTokenData,
+            pointsEarned: earned,
+            taskType: taskType
+        )
+        modelContext.insert(event)
 
         save()
     }
 
+    /// Manually lower the difficulty (costs progress, limited per day)
     func decreaseLevel() {
         guard let state = brainState, canDecreaseToday else { return }
         resetDailyCountersIfNeeded()
@@ -116,6 +136,16 @@ final class DashboardViewModel {
 
         save()
     }
+    
+    private func resetDailyCountersIfNeeded() {
+        guard let state = brainState else { return }
+        let todayStart = Calendar.current.startOfDay(for: .now)
+        
+        if state.dailyCounterResetDate < todayStart {
+            applyDayReset(to: state)
+            save()
+        }
+    }
 
     private func applyDayReset(to state: BrainState) {
         state.currentLevel = state.actualLevel
@@ -123,21 +153,16 @@ final class DashboardViewModel {
         state.dailyLevelDecreaseCount = 0
         state.dailyCounterResetDate = Calendar.current.startOfDay(for: .now)
     }
-
-    private func resetDailyCountersIfNeeded() {
-        guard let state = brainState else { return }
-        let todayStart = Calendar.current.startOfDay(for: .now)
-        if state.dailyCounterResetDate < todayStart {
-            applyDayReset(to: state)
-            save()
-        }
-    }
-
+    
     func debugIncrementLevel() {
-        recordFrictionCompleted()
+        recordFrictionCompleted(taskType: "debug")
     }
 
     private func save() {
-        try? modelContext.save()
+        do {
+            try modelContext.save()
+        } catch {
+            print("💾 SwiftData Error: Failed to save context: \(error.localizedDescription)")
+        }
     }
 }
