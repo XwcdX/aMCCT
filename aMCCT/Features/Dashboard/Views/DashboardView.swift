@@ -54,13 +54,14 @@ struct DashboardView: View {
     private var topBar: some View {
         HStack {
             VStack{
-                Text("Hardway")
-                    .font(.system(size: 25, weight: .semibold, design: .rounded))
+                Text("Hardwayyy")
+                    .font(.title2)
+                    .bold()
                     .foregroundStyle(.baseBlacktoWhite)
                     .frame(maxWidth: .infinity, alignment: .leading)
             
                 Text("Your aMCC Brain")
-                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(.baseBlacktoWhite)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
