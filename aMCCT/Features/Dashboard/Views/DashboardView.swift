@@ -7,7 +7,7 @@ struct DashboardView: View {
     var body: some View {
         GeometryReader { geo in
         ZStack(alignment: .top) {
-            Color.black.ignoresSafeArea()
+        
 
             VStack(spacing: 0) {
                 topBar
@@ -56,11 +56,13 @@ struct DashboardView: View {
             VStack{
                 Text("Hardway")
                     .font(.system(size: 25, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.baseBlacktoWhite)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             
                 Text("Your aMCC Brain")
                     .font(.system(size: 15, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.baseBlacktoWhite)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
 
             Spacer()
@@ -69,12 +71,12 @@ struct DashboardView: View {
                 viewModel.isSettingsPresented = true
             } label: {
                 Circle()
-                    .fill(Color.white.opacity(0.15))
+                    .fill(Color.baseBlacktoWhite)
                     .frame(width: 36, height: 36)
                     .overlay {
                         Image(systemName: "person.fill")
                             .font(.system(size: 16))
-                            .foregroundStyle(.white.opacity(0.8))
+                            .foregroundStyle(.baseWhitetoblack)
                     }
                     // TODO: swap Circle for equipped profile border asset
             }
@@ -119,7 +121,7 @@ struct DashboardView: View {
         .padding(.vertical, 14)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.white.opacity(0.07))
+                .fill(Color.baseBlacktoWhite.opacity(0.5))
         )
     }
 
@@ -130,7 +132,7 @@ struct DashboardView: View {
                 .foregroundStyle(accent)
             Text(label)
                 .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(.white.opacity(0.45))
+                .foregroundStyle(.white)
                 .textCase(.uppercase)
                 .tracking(0.8)
         }

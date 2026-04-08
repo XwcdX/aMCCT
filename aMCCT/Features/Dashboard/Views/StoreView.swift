@@ -36,7 +36,7 @@ struct StoreView: View {
                 .padding(.bottom, 24)
             }
         }
-        .background(Color.black)
+        .background(.baseWhitetoblack)
         .onAppear {
             print("[StoreView] appeared — allItems count: \(allItems.count)")
             for item in allItems {
@@ -67,12 +67,12 @@ struct StoreView: View {
                     Text("Collection")
                         .font(.system(size: 13, weight: .medium))
                 }
-                .foregroundStyle(.white.opacity(0.6))
+                .foregroundStyle(.white)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 7)
                 .background(
                     RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.white.opacity(0.08))
+                        .fill(.baseBlacktoWhite.opacity(0.5))
                 )
             }
 
@@ -82,19 +82,19 @@ struct StoreView: View {
             HStack(spacing: 5) {
                 Image(systemName: "sparkle")
                     .font(.system(size: 12, weight: .bold))
-                    .foregroundStyle(.yellow)
+                    .foregroundStyle(.black)
                 Text("\(viewModel.brainState?.spendablePoints ?? 0)")
                     .font(.system(size: 15, weight: .bold, design: .rounded))
-                    .foregroundStyle(.yellow)
+                    .foregroundStyle(.black)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 7)
             .background(
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.yellow.opacity(0.1))
+                    .fill(Color.yellow)
                     .overlay(
                         RoundedRectangle(cornerRadius: 20)
-                            .strokeBorder(Color.yellow.opacity(0.2), lineWidth: 1)
+                            .strokeBorder(Color.black.opacity(0.2), lineWidth: 1)
                     )
             )
         }
@@ -107,10 +107,10 @@ struct StoreView: View {
             HStack(spacing: 6) {
                 Image(systemName: type.icon)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.4))
+                    .foregroundStyle(.baseBlacktoWhite.opacity(0.4))
                 Text(type.displayName)
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.4))
+                    .foregroundStyle(.baseBlacktoWhite.opacity(0.4))
                     .textCase(.uppercase)
                     .tracking(0.8)
             }
@@ -144,12 +144,12 @@ struct StoreItemCard: View {
             // Asset placeholder
             ZStack {
                 RoundedRectangle(cornerRadius: 10)
-                    .fill(Color.white.opacity(0.05))
+                    .fill(.baseBlacktoWhite.opacity(0.05))
                     .frame(height: 90)
 
                 Image(systemName: item.type.icon)
                     .font(.system(size: 28, weight: .thin))
-                    .foregroundStyle(.white.opacity(item.isPurchased ? 0.85 : 0.2))
+                    .foregroundStyle(.baseBlacktoWhite.opacity(item.isPurchased ? 0.85 : 0.2))
             }
 
             VStack(alignment: .leading, spacing: 3) {
@@ -223,3 +223,4 @@ struct StoreItemCard: View {
         }
     }
 }
+
