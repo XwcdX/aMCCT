@@ -3,6 +3,7 @@ import SwiftData
 
 struct DashboardView: View {
     @Environment(DashboardViewModel.self) private var viewModel
+    @Environment(AppCoordinator.self) private var appCoordinator
 
     var body: some View {
         GeometryReader { geo in
@@ -16,6 +17,9 @@ struct DashboardView: View {
                     
                     statsStrip
                         .padding(20)
+                        .onTapGesture {
+                            appCoordinator.showHistory()
+                        }
                     
                     StoreView()
                         .environment(viewModel)
@@ -62,7 +66,7 @@ struct DashboardView: View {
             Spacer()
             
             Button {
-                viewModel.isSettingsPresented = true
+                appCoordinator.showSettings()
             } label: {
                 Circle()
                     .fill(Color.baseBlacktoWhite)
@@ -157,12 +161,18 @@ struct DashboardView: View {
 
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: BrainState.self, StoreItem.self, FrictionEvent.self, configurations: config)
+    let container = try! ModelContainer(
+        for: BrainState.self, StoreItem.self, FrictionEvent.self,
+        configurations: config
+    )
 
     let viewModel = DashboardViewModel(modelContext: container.mainContext)
     viewModel.load()
+    
+    let coordinator = AppCoordinator()
 
     return DashboardView()
         .environment(viewModel)
+        .environment(coordinator)
         .modelContainer(container)
 }

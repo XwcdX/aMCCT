@@ -6,6 +6,7 @@ public struct SharedTokenStore: @unchecked Sendable {
 
     public static let appGroupID = "group.com.oxy.aMCCT"
     public static let selectedTokensKey = "aMCCT.selectedTokens"
+    public static let preventDeletionKey = "aMCCT.preventDeletion"
 
     public init() {
         self.defaults = UserDefaults(suiteName: SharedTokenStore.appGroupID) ?? UserDefaults.standard
@@ -22,5 +23,13 @@ public struct SharedTokenStore: @unchecked Sendable {
             return FamilyActivitySelection()
         }
         return selection
+    }
+    
+    public func saveDeletionContext(prevent: Bool) {
+        defaults.set(prevent, forKey: SharedTokenStore.preventDeletionKey)
+    }
+
+    public func loadDeletionContext() -> Bool {
+        defaults.bool(forKey: SharedTokenStore.preventDeletionKey)
     }
 }
