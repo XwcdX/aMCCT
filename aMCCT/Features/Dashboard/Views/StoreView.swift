@@ -223,4 +223,3 @@ struct StoreItemCard: View {
         }
     }
 }
-
