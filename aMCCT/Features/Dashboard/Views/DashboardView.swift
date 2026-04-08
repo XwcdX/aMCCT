@@ -7,7 +7,7 @@ struct DashboardView: View {
     var body: some View {
         GeometryReader { geo in
         ZStack(alignment: .top) {
-            Color.black.ignoresSafeArea()
+        
 
             VStack(spacing: 0) {
                 topBar
@@ -17,12 +17,7 @@ struct DashboardView: View {
                     .frame(height: geo.size.height * 0.42)
 
                 statsStrip
-                    .padding(.horizontal, 20)
-                    .padding(.top, 8)
-                
-//                levelControls
-//                    .padding(.horizontal, 20)
-//                    .padding(.top, 16)
+                    .padding(20)
                 
                 StoreView()
                     .environment(viewModel)
@@ -54,13 +49,16 @@ struct DashboardView: View {
     private var topBar: some View {
         HStack {
             VStack{
-                Text("Hardway")
-                    .font(.system(size: 25, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                Text("Hardwayyy")
+                    .font(.title2)
+                    .bold()
+                    .foregroundStyle(.baseBlacktoWhite)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             
                 Text("Your aMCC Brain")
-                    .font(.system(size: 15, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(.baseBlacktoWhite)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
 
             Spacer()
@@ -69,12 +67,12 @@ struct DashboardView: View {
                 viewModel.isSettingsPresented = true
             } label: {
                 Circle()
-                    .fill(Color.white.opacity(0.15))
+                    .fill(Color.baseBlacktoWhite)
                     .frame(width: 36, height: 36)
                     .overlay {
                         Image(systemName: "person.fill")
                             .font(.system(size: 16))
-                            .foregroundStyle(.white.opacity(0.8))
+                            .foregroundStyle(.baseWhitetoblack)
                     }
                     // TODO: swap Circle for equipped profile border asset
             }
@@ -119,7 +117,7 @@ struct DashboardView: View {
         .padding(.vertical, 14)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.white.opacity(0.07))
+                .fill(Color.baseBlacktoWhite.opacity(0.5))
         )
     }
 
@@ -130,7 +128,7 @@ struct DashboardView: View {
                 .foregroundStyle(accent)
             Text(label)
                 .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(.white.opacity(0.45))
+                .foregroundStyle(.white)
                 .textCase(.uppercase)
                 .tracking(0.8)
         }
@@ -141,97 +139,6 @@ struct DashboardView: View {
         Rectangle()
             .fill(Color.white.opacity(0.1))
             .frame(width: 1, height: 32)
-    }
-
-    private var levelControls: some View {
-        VStack(spacing: 10) {
-            levelProgressBar
-
-            HStack(spacing: 12) {
-                Button {
-                    viewModel.isDecreaseConfirmPresented = true
-                } label: {
-                    Label("Decrease level", systemImage: "minus.circle")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(.red.opacity(0.8))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
-                        .background(
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color.red.opacity(0.1))
-                        )
-                }
-                .disabled(!(viewModel.canDecreaseToday))
-
-                Button {
-                    viewModel.debugIncrementLevel()
-                } label: {
-                    Label("Add level (dev)", systemImage: "plus.circle")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(.green.opacity(0.8))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
-                        .background(
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color.green.opacity(0.1))
-                        )
-                }
-            }
-
-            HStack(spacing: 4) {
-                Image(systemName: "info.circle")
-                    .font(.system(size: 11))
-                    .foregroundStyle(.white.opacity(0.3))
-                Text(viewModel.dailyCapsDescription)
-                    .font(.system(size: 11))
-                    .foregroundStyle(.white.opacity(0.3))
-            }
-        }
-    }
-
-    private var levelProgressBar: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text("Current → Actual")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.4))
-                    .textCase(.uppercase)
-                    .tracking(0.6)
-                Spacer()
-                Text("\(viewModel.brainState?.currentLevel ?? 0) / \(viewModel.brainState?.actualLevel ?? 0)")
-                    .font(.system(size: 11, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.5))
-            }
-
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.white.opacity(0.08))
-                        .frame(height: 6)
-
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.cyan.opacity(0.35))
-                        .frame(
-                            width: geo.size.width * viewModel.actualLevelFraction,
-                            height: 6
-                        )
-
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(
-                            LinearGradient(
-                                colors: [.cyan, .purple],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .frame(
-                            width: geo.size.width * viewModel.currentLevelFraction,
-                            height: 6
-                        )
-                }
-            }
-            .frame(height: 6)
-        }
     }
 }
 
