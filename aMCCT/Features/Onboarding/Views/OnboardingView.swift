@@ -1,6 +1,7 @@
 import SwiftUI
 
 // MARK: - Data Model
+
 struct OnboardingStep: Identifiable {
     let id: Int
     let title: String?
@@ -9,6 +10,7 @@ struct OnboardingStep: Identifiable {
 }
 
 // MARK: - Main View
+
 struct OnboardingView: View {
     @Binding var hasSeenOnboarding: Bool
     @State private var currentPage = 0
@@ -36,8 +38,6 @@ struct OnboardingView: View {
     
     var body: some View {
         VStack {
-            dismissButton
-            
             TabView(selection: $currentPage) {
                 ForEach(steps) { step in
                     OnboardingPage(step: step)
@@ -49,25 +49,10 @@ struct OnboardingView: View {
             
             nextButton
         }
+        .padding(.top, 24)
     }
     
     // MARK: - Subviews
-    private var dismissButton: some View {
-        HStack {
-            Button(action: {
-                hasSeenOnboarding = true
-            }) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(.primary)
-                    .padding(10)
-                    .background(Circle().fill(Color(UIColor.systemGray6)))
-            }
-            Spacer()
-        }
-        .padding(.horizontal, 24)
-        .padding(.top, 24)
-    }
     
     private var nextButton: some View {
         Button(action: {
@@ -90,6 +75,7 @@ struct OnboardingView: View {
     }
     
     // MARK: - Helpers
+    
     private func setupPageControlAppearance() {
         UIPageControl.appearance().currentPageIndicatorTintColor = .black
         UIPageControl.appearance().pageIndicatorTintColor = .systemGray4
@@ -97,12 +83,11 @@ struct OnboardingView: View {
 }
 
 // MARK: - Reusable Page View
+
 struct OnboardingPage: View {
     let step: OnboardingStep
     
     var body: some View {
-        // VStack ini akan otomatis berada di tengah layar
-        // karena tidak ada Spacer() yang mendorongnya ke atas
         VStack(spacing: 32) {
             
             if let title = step.title {

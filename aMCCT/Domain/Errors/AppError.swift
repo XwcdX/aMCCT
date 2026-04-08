@@ -5,6 +5,7 @@ enum AppError: LocalizedError {
     case noSelectionFound
     case shieldApplicationFailed(underlying: Error)
     case storageCorrupted
+    case aiUnavailable
  
     var errorDescription: String? {
         switch self {
@@ -16,6 +17,8 @@ enum AppError: LocalizedError {
             return "Failed to apply shield: \(e.localizedDescription)"
         case .storageCorrupted:
             return "Local data could not be read. Please restart the app."
+        case .aiUnavailable:
+            return "AI is currently unavailable. Please try again later."
         }
     }
 }

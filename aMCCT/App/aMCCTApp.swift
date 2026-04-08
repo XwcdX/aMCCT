@@ -10,7 +10,7 @@ struct aMCCTApp: App {
 
     init() {
         do {
-            let container = try ModelContainer(for: BrainState.self, StoreItem.self, TimerRecord.self)
+            let container = try ModelContainer(for: BrainState.self, StoreItem.self, ShieldUnlockRecord.self)
             self.container = container
             self._appEnvironment = State(initialValue: AppEnvironment(modelContext: container.mainContext))
         } catch {
@@ -20,10 +20,24 @@ struct aMCCTApp: App {
 
     var body: some Scene {
         WindowGroup {
+//            TypingTaskView(
+//                            viewModel: FrictionTaskViewModel(
+//                                config: TypingTaskConfig(
+//                                    maxToken: 40,
+//                                    wordCount: 8,
+//                                    vocabulary: .advanced,
+//                                    structure: .simpleSentence,
+//                                    constraints: [.punctuationRequired]
+//                                ),
+//                                promptService: FoundationPromptService()
+//                            )
+//                        )
+//            .modelContainer(container)
+            
             DashboardView()
                 .environment(appEnvironment.dashboardViewModel)
                 .modelContainer(container)
-                .sheet(isPresented: .init(
+                .fullScreenCover(isPresented: .init(
                     get: { !hasSeenOnboarding },
                     set: { _ in }
                 )) {
