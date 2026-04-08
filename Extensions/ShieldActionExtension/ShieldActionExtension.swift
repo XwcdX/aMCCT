@@ -3,6 +3,7 @@ import ManagedSettings
 // Override the functions below to customize the shield actions used in various situations.
 // The system provides a default response for any functions that your subclass doesn't override.
 // Make sure that your class name matches the NSExtensionPrincipalClass in your Info.plist.
+@MainActor
 class ShieldActionExtension: ShieldActionDelegate {
     override func handle(action: ShieldAction, for application: ApplicationToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
         // Handle the action as needed.
@@ -11,8 +12,8 @@ class ShieldActionExtension: ShieldActionDelegate {
             completionHandler(.close)
         case .secondaryButtonPressed:
             completionHandler(.defer)
-        @unknown default:
-            fatalError()
+        default:
+            completionHandler(.defer)
         }
     }
     
@@ -26,3 +27,4 @@ class ShieldActionExtension: ShieldActionDelegate {
         completionHandler(.close)
     }
 }
+

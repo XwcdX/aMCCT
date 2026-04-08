@@ -1,5 +1,5 @@
-import SwiftUI
 import SceneKit
+import SwiftUI
 
 struct TransparentSceneView: UIViewRepresentable {
     let scene: SCNScene
@@ -9,11 +9,14 @@ struct TransparentSceneView: UIViewRepresentable {
         let view = SCNView()
         view.scene = scene
         view.pointOfView = pointOfView
+        view.preferredFramesPerSecond = 30
+        view.antialiasingMode = .multisampling2X
         view.allowsCameraControl = true
         view.autoenablesDefaultLighting = true
         view.backgroundColor = .clear
         view.isOpaque = false
         view.layer.isOpaque = false
+        view.rendersContinuously = false
         return view
     }
 
@@ -28,10 +31,11 @@ struct BrainSceneView: View {
     @State private var scene = SCNScene()
     @State private var amccNodes: [SCNNode] = []
     @State private var brainRoot = SCNNode()
+    @State private var isInitialized = false
 
     private let amccNodeNames: Set<String> = [
         "Allen_cingulate_gyrus_rostral_anterior_part_L",
-        "Allen_cingulate_gyrus_rostral_anterior_part_R"
+        "Allen_cingulate_gyrus_rostral_anterior_part_R",
     ]
 
     private let cortexNodeNames: Set<String> = []
@@ -39,9 +43,17 @@ struct BrainSceneView: View {
     var body: some View {
         TransparentSceneView(
             scene: scene,
-            pointOfView: scene.rootNode.childNode(withName: "camera", recursively: false)
+            pointOfView: scene.rootNode.childNode(
+                withName: "camera",
+                recursively: false
+            )
         )
-        .onAppear { setupScene() }
+        .onAppear {
+            if !isInitialized {
+                setupScene()
+                isInitialized = true
+            }
+        }
         .onChange(of: brainLevel) { _, newValue in
             updateaMCC(level: newValue)
         }
@@ -50,7 +62,8 @@ struct BrainSceneView: View {
     private func setupScene() {
         scene.background.contents = UIColor.clear
 
-        guard let brainScene = SCNScene(named: "3d-vh-m-allen-brain.usdz") else {
+        guard let brainScene = SCNScene(named: "3d-vh-m-allen-brain.usdz")
+        else {
             print("Failed to load brain USDZ")
             return
         }
@@ -62,9 +75,9 @@ struct BrainSceneView: View {
 
         let (minVec, maxVec) = brainRoot.boundingBox
         let currentHeight = maxVec.y - minVec.y
-        let currentWidth  = maxVec.x - minVec.x
-        let currentDepth  = maxVec.z - minVec.z
-        let maxDimension  = max(currentHeight, currentWidth, currentDepth)
+        let currentWidth = maxVec.x - minVec.x
+        let currentDepth = maxVec.z - minVec.z
+        let maxDimension = max(currentHeight, currentWidth, currentDepth)
 
         let targetSize: Float = 2.0
         let autoScale = targetSize / maxDimension
@@ -140,15 +153,20 @@ struct BrainSceneView: View {
         let t = max(t01, 0.4)
         let hue = 0.72 - (0.14 * t)
         let brightness = 0.5 + (0.5 * t)
-        let color = UIColor(hue: hue, saturation: 0.9, brightness: brightness, alpha: 1.0)
+        let color = UIColor(
+            hue: hue,
+            saturation: 0.9,
+            brightness: brightness,
+            alpha: 1.0
+        )
         let glowAlpha = 0.2 + (0.5 * t)
         let glow = UIColor.cyan.withAlphaComponent(glowAlpha)
 
         node.geometry?.materials.forEach { mat in
-            mat.diffuse.contents  = color
+            mat.diffuse.contents = color
             mat.emission.contents = glow
-            mat.isDoubleSided     = true
-            mat.blendMode         = .replace
+            mat.isDoubleSided = true
+            mat.blendMode = .replace
             mat.writesToDepthBuffer = true
         }
     }
@@ -158,7 +176,9 @@ struct BrainSceneView: View {
 
         SCNTransaction.begin()
         SCNTransaction.animationDuration = 2
-        SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        SCNTransaction.animationTimingFunction = CAMediaTimingFunction(
+            name: .easeInEaseOut
+        )
 
         amccNodes.forEach { node in
             styleaMCC(node: node, level: level)

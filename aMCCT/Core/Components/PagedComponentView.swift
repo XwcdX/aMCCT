@@ -4,7 +4,22 @@ struct PagedCarouselItem: Identifiable {
 	let id: Int
 	let title: String?
 	let imageName: String?
+    let systemIconName: String?
 	let text: String
+    
+    init(
+        id: Int,
+        title: String?,
+        imageName: String? = nil,
+        systemIconName: String? = nil,
+        text: String
+    ) {
+        self.id = id
+        self.title = title
+        self.imageName = imageName
+        self.systemIconName = systemIconName
+        self.text = text
+    }
 }
 
 struct PagedComponentView<Data: RandomAccessCollection, Content: View>: View {
@@ -78,6 +93,7 @@ struct PagedComponentView<Data: RandomAccessCollection, Content: View>: View {
 struct PagedCarouselPageView: View {
 	let title: String?
 	let imageName: String?
+    let systemIconName: String?
 	let text: String
 
 	var body: some View {
@@ -88,12 +104,18 @@ struct PagedCarouselPageView: View {
 					.multilineTextAlignment(.center)
 			}
 
-			if let imageName {
-				Image(imageName)
-					.resizable()
-					.scaledToFit()
-					.frame(height: 220)
-			}
+            if let systemIconName {
+                Image(systemName: systemIconName)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 150)
+                    .foregroundStyle(.blue)
+            } else if let imageName {
+                Image(imageName)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 220)
+            }
 
 			Text(text)
 				.font(.system(size: 15, weight: .regular))

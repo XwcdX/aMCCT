@@ -2,7 +2,14 @@ import SwiftUI
 
 struct OnboardingView: View {
     @Binding var hasSeenOnboarding: Bool
+    @Environment(AppEnvironment.self) private var env
+    @State private var viewModel: OnboardingViewModel
     @State private var currentPage = 0
+    
+    init(hasSeenOnboarding: Binding<Bool>, service: any ScreenTimeServicing) {
+        self._hasSeenOnboarding = hasSeenOnboarding
+        self._viewModel = State(initialValue: OnboardingViewModel(screenTimeService: service))
+    }
     
     private let steps = [
         PagedCarouselItem(
@@ -19,29 +26,55 @@ struct OnboardingView: View {
         ),
         PagedCarouselItem(
             id: 2,
-            title: nil,
+            title: "The Shield",
             imageName: "welcome-3",
             text: "Opening a distracting app?\nOur shield will replace it with an interactive brain challenge.\n\nBeat the challenge to earn points for cool rewards."
+        ),
+        PagedCarouselItem(
+            id: 3,
+            title: "Final Step",
+            systemIconName: "shield.checkered",
+            text: "To protect your focus, we need your permission to shield distracting apps.\n\nYour data is private and never leaves this iPhone."
         )
     ]
     
     var body: some View {
-        PagedComponentView(
-            currentPage: $currentPage,
-            items: steps,
-            nextTitle: "Next",
-            doneTitle: "Get Started",
-            onDone: { hasSeenOnboarding = true }
-        ) { step in
-            PagedCarouselPageView(
-                title: step.title,
-                imageName: step.imageName,
-                text: step.text
-            )
+        VStack {
+            PagedComponentView(
+                currentPage: $currentPage,
+                items: steps,
+                nextTitle: "Next",
+                doneTitle: viewModel.isAuthorizing ? "Authorizing..." : "Grant Access",
+                onDone: {
+                    handleGetStarted()
+                }
+            ) { step in
+                VStack {
+                    PagedCarouselPageView(
+                        title: step.title,
+                        imageName: step.imageName,
+                        systemIconName: step.systemIconName,
+                        text: step.text
+                    )
+                    
+                    if currentPage == 3, let error = viewModel.error {
+                        Text(error)
+                            .font(.caption)
+                            .foregroundColor(.red)
+                            .padding(.top, 10)
+                    }
+                }
+            }
+        }
+        .background(Color.black.ignoresSafeArea())
+    }
+    
+    private func handleGetStarted() {
+        Task {
+            let success = await viewModel.authorize()
+            if success {
+                hasSeenOnboarding = true
+            }
         }
     }
-}
-
-#Preview {
-    OnboardingView(hasSeenOnboarding: .constant(false))
 }

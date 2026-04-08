@@ -5,44 +5,52 @@ import SwiftData
 struct aMCCTApp: App {
     let container: ModelContainer
     @State private var appEnvironment: AppEnvironment
-    
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding: Bool = false
 
     init() {
         do {
-            let container = try ModelContainer(for: BrainState.self, StoreItem.self, ShieldUnlockRecord.self)
+            let schema = Schema([
+                BrainState.self,
+                StoreItem.self,
+                ShieldUnlockRecord.self,
+                FrictionEvent.self
+            ])
+            
+            let modelConfiguration = ModelConfiguration(
+                schema: schema,
+                isStoredInMemoryOnly: false
+            )
+            
+            let container = try ModelContainer(
+                for: schema,
+                configurations: [modelConfiguration]
+            )
             self.container = container
-            self._appEnvironment = State(initialValue: AppEnvironment(modelContext: container.mainContext))
+            let environment = AppEnvironment(modelContext: container.mainContext)
+            self._appEnvironment = State(initialValue: environment)
         } catch {
-            fatalError("Failed to create ModelContainer: \(error)")
+            fatalError("CRITICAL: Failed to initialize SwiftData ModelContainer: \(error.localizedDescription)")
         }
     }
 
     var body: some Scene {
         WindowGroup {
-//            TypingTaskView(
-//                            viewModel: FrictionTaskViewModel(
-//                                config: TypingTaskConfig(
-//                                    maxToken: 40,
-//                                    wordCount: 8,
-//                                    vocabulary: .advanced,
-//                                    structure: .simpleSentence,
-//                                    constraints: [.punctuationRequired]
-//                                ),
-//                                promptService: FoundationPromptService()
-//                            )
-//                        )
-//            .modelContainer(container)
-            
             DashboardView()
                 .environment(appEnvironment.dashboardViewModel)
+                .environment(appEnvironment)
                 .modelContainer(container)
+                
                 .fullScreenCover(isPresented: .init(
                     get: { !hasSeenOnboarding },
                     set: { _ in }
                 )) {
-                    OnboardingView(hasSeenOnboarding: $hasSeenOnboarding)
-                        .interactiveDismissDisabled()
+                    OnboardingView(
+                        hasSeenOnboarding: $hasSeenOnboarding,
+                        service: appEnvironment.screenTimeService
+                    )
+                    .environment(appEnvironment)
+                    .modelContainer(container)
+                    .interactiveDismissDisabled()
                 }
         }
     }
