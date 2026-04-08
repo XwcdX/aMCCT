@@ -1,5 +1,3 @@
-// brainscene
-
 import SwiftUI
 import SceneKit
 
@@ -25,7 +23,7 @@ struct TransparentSceneView: UIViewRepresentable {
 }
 
 struct BrainSceneView: View {
-    var strength: Double
+    var brainLevel: Int
 
     @State private var scene = SCNScene()
     @State private var amccNodes: [SCNNode] = []
@@ -44,8 +42,8 @@ struct BrainSceneView: View {
             pointOfView: scene.rootNode.childNode(withName: "camera", recursively: false)
         )
         .onAppear { setupScene() }
-        .onChange(of: strength) { _, newValue in
-            updateaMCC(strength: newValue)
+        .onChange(of: brainLevel) { _, newValue in
+            updateaMCC(level: newValue)
         }
     }
 
@@ -82,7 +80,7 @@ struct BrainSceneView: View {
 
             if amccNodeNames.contains(name) {
                 amccNodes.append(node)
-                styleaMCC(node: node, strength: strength)
+                styleaMCC(node: node, level: brainLevel)
             } else if cortexNodeNames.contains(name) {
                 node.geometry?.materials.forEach {
                     $0.diffuse.contents = UIColor.white.withAlphaComponent(9)
@@ -134,11 +132,12 @@ struct BrainSceneView: View {
         let rotate = SCNAction.rotateBy(x: 0, y: .pi * 2, z: 0, duration: 20)
         brainRoot.runAction(.repeatForever(rotate))
 
-        updateaMCC(strength: strength)
+        updateaMCC(level: brainLevel)
     }
 
-    private func styleaMCC(node: SCNNode, strength: Double) {
-        let t = CGFloat(max(strength, 0.4))
+    private func styleaMCC(node: SCNNode, level: Int) {
+        let t01 = max(0.0, min(1.0, CGFloat(level) / 100.0))
+        let t = max(t01, 0.4)
         let hue = 0.72 - (0.14 * t)
         let brightness = 0.5 + (0.5 * t)
         let color = UIColor(hue: hue, saturation: 0.9, brightness: brightness, alpha: 1.0)
@@ -154,17 +153,23 @@ struct BrainSceneView: View {
         }
     }
 
-    private func updateaMCC(strength: Double) {
+    private func updateaMCC(level: Int) {
+        let t01 = max(0.0, min(1.0, Double(level) / 100.0))
+
         SCNTransaction.begin()
         SCNTransaction.animationDuration = 2
         SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
 
         amccNodes.forEach { node in
-            styleaMCC(node: node, strength: strength)
-            let s = Float(1 + max(strength, 0) * 0)
+            styleaMCC(node: node, level: level)
+            let s = Float(1 + max(t01, 0) * 0)
             node.scale = SCNVector3(s, s, s)
         }
 
         SCNTransaction.commit()
     }
+}
+
+#Preview("Brain Scene") {
+    BrainSceneView(brainLevel: 70)
 }

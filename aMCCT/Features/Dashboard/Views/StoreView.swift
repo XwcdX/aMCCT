@@ -7,6 +7,7 @@ struct StoreView: View {
     @Query private var allItems: [StoreItem]
 
     @State private var isCollectionPresented = false
+    @State private var selectedRange = "wallpaper"
 
     private let columns = [
         GridItem(.flexible(), spacing: 12),
@@ -15,28 +16,37 @@ struct StoreView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            VStack(spacing: 20) {
+                storeHeader
+                
+                SegmentedControl(
+                    selection: $selectedRange,
+                    accessibilityLabel: "Graph range",
+                    "wallpaper",
+                    "sticker",
+                    "booster"
+                )
+                
+                ScrollView {
+                    LazyVGrid(columns: columns, spacing: 12) {
+                        let filteredItems = allItems.filter { $0.type.rawValue == selectedRange }
 
-            // MARK: Store header
-            storeHeader
-                .padding(.horizontal, 20)
-                .padding(.top, 14)
-                .padding(.bottom, 10)
-
-            // MARK: Item grid
-            ScrollView {
-                VStack(alignment: .leading, spacing: 28) {
-                    ForEach(StoreItemType.allCases, id: \.self) { type in
-                        let items = allItems.filter { $0.type == type }
-                        if !items.isEmpty {
-                            typeSection(type: type, items: items)
+                        if filteredItems.isEmpty {
+                            ForEach(0..<6, id: \.self) { _ in
+                                placeholderSquareCard
+                            }
+                        } else {
+                            ForEach(filteredItems, id: \.id) { item in
+                                storeGridCell(for: item)
+                            }
                         }
                     }
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 24)
+                
             }
+            .padding(.horizontal, 20)
         }
-        .background(Color.black)
+        .background(.baseWhitetoblack)
         .onAppear {
             print("[StoreView] appeared — allItems count: \(allItems.count)")
             for item in allItems {
@@ -67,12 +77,12 @@ struct StoreView: View {
                     Text("Collection")
                         .font(.system(size: 13, weight: .medium))
                 }
-                .foregroundStyle(.white.opacity(0.6))
+                .foregroundStyle(.white)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 7)
                 .background(
                     RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.white.opacity(0.08))
+                        .fill(.baseBlacktoWhite.opacity(0.5))
                 )
             }
 
@@ -82,146 +92,57 @@ struct StoreView: View {
             HStack(spacing: 5) {
                 Image(systemName: "sparkle")
                     .font(.system(size: 12, weight: .bold))
-                    .foregroundStyle(.yellow)
+                    .foregroundStyle(.black)
                 Text("\(viewModel.brainState?.points ?? 0)")
                     .font(.system(size: 15, weight: .bold, design: .rounded))
-                    .foregroundStyle(.yellow)
+                    .foregroundStyle(.black)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 7)
             .background(
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.yellow.opacity(0.1))
+                    .fill(Color.yellow)
                     .overlay(
                         RoundedRectangle(cornerRadius: 20)
-                            .strokeBorder(Color.yellow.opacity(0.2), lineWidth: 1)
+                            .strokeBorder(Color.black.opacity(0.2), lineWidth: 1)
                     )
             )
         }
     }
 
-    // MARK: - Type section
+    private func storeGridCell(for item: StoreItem) -> some View {
+        placeholderSquareCard
+    }
 
-    private func typeSection(type: StoreItemType, items: [StoreItem]) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 6) {
-                Image(systemName: type.icon)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.4))
-                Text(type.displayName)
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.4))
-                    .textCase(.uppercase)
-                    .tracking(0.8)
-            }
 
-            LazyVGrid(columns: columns, spacing: 12) {
-                ForEach(items, id: \.id) { item in
-                    StoreItemCard(
-                        item: item,
-                        spendablePoints: viewModel.brainState?.points ?? 0,
-                        onPurchase: { viewModel.purchaseItem(item) }
-                    )
-                }
-            }
-        }
+    private var placeholderSquareCard: some View {
+        RoundedRectangle(cornerRadius: 14)
+            .fill(Color(.secondarySystemBackground))
+            .frame(maxWidth: .infinity)
+            .aspectRatio(1, contentMode: .fit)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(.clear)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .strokeBorder(Color.baseBlacktoWhite.opacity(0.2), lineWidth: 1)
+        )
     }
 }
 
-// MARK: - StoreItemCard
+#Preview {
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(
+        for: BrainState.self,
+        StoreItem.self,
+        configurations: config
+    )
 
-struct StoreItemCard: View {
+    let viewModel = DashboardViewModel(modelContext: container.mainContext)
+    viewModel.load()
 
-    let item: StoreItem
-    let spendablePoints: Int
-    let onPurchase: () -> Void
-
-    private var canAfford: Bool { spendablePoints >= item.price }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-
-            // Asset placeholder
-            ZStack {
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(Color.white.opacity(0.05))
-                    .frame(height: 90)
-
-                Image(systemName: item.type.icon)
-                    .font(.system(size: 28, weight: .thin))
-                    .foregroundStyle(.white.opacity(item.isPurchased ? 0.85 : 0.2))
-            }
-
-            VStack(alignment: .leading, spacing: 3) {
-                Text(item.name)
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
-                    .lineLimit(1)
-
-                if let description = item.itemDescription {
-                    Text(description)
-                        .font(.system(size: 10))
-                        .foregroundStyle(.white.opacity(0.35))
-                        .lineLimit(2)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-            }
-            .padding(.horizontal, 10)
-            .padding(.top, 8)
-            .padding(.bottom, 6)
-
-            purchaseButton
-                .padding(.horizontal, 10)
-                .padding(.bottom, 10)
-        }
-        .background(
-            RoundedRectangle(cornerRadius: 14)
-                .fill(Color.white.opacity(0.06))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14)
-                        .strokeBorder(
-                            item.isPurchased
-                                ? Color.cyan.opacity(0.25)
-                                : Color.white.opacity(0.07),
-                            lineWidth: 1
-                        )
-                )
-        )
-    }
-
-    @ViewBuilder
-    private var purchaseButton: some View {
-        if item.isPurchased {
-            HStack(spacing: 4) {
-                Image(systemName: "checkmark")
-                    .font(.system(size: 9, weight: .bold))
-                Text("Owned")
-                    .font(.system(size: 11, weight: .semibold))
-            }
-            .foregroundStyle(.cyan)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 6)
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.cyan.opacity(0.1))
-            )
-        } else {
-            Button(action: onPurchase) {
-                HStack(spacing: 4) {
-                    Image(systemName: "sparkle")
-                        .font(.system(size: 9, weight: .bold))
-                    Text("\(item.price)")
-                        .font(.system(size: 11, weight: .semibold, design: .rounded))
-                }
-                .foregroundStyle(canAfford ? .yellow : .white.opacity(0.25))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 6)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(canAfford ? Color.yellow.opacity(0.1) : Color.white.opacity(0.04))
-                )
-            }
-            .disabled(!canAfford)
-        }
-    }
+    return StoreView()
+        .environment(viewModel)
+        .modelContainer(container)
 }

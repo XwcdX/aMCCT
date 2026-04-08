@@ -59,9 +59,11 @@ final class DashboardViewModel {
         return frequencies.max(by: { $0.value < $1.value })?.key
     }
 
-    var brainStrength: Double {
-        guard let state = brainState else { return 0.0 }
-        return Double(state.actualLevel) / Double(LevelConfig.actualLevelMax)
+    /// Brain level on a 1–100 scale for UI components like BrainSceneView.
+    var brainLevel: Int {
+        guard let state = brainState else { return 1 }
+        let fraction = Double(state.actualLevel) / Double(LevelConfig.actualLevelMax)
+        return max(1, min(100, Int((fraction * 100.0).rounded())))
     }
 
     var currentLevelFraction: Double {
@@ -166,3 +168,4 @@ final class DashboardViewModel {
         }
     }
 }
+
