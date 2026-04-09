@@ -85,8 +85,8 @@ struct PagedComponentView<Data: RandomAccessCollection, Content: View>: View {
 	}
 
 	private func setupPageControlAppearance() {
-		UIPageControl.appearance().currentPageIndicatorTintColor = .black
-		UIPageControl.appearance().pageIndicatorTintColor = .systemGray4
+		UIPageControl.appearance().currentPageIndicatorTintColor = .label
+		UIPageControl.appearance().pageIndicatorTintColor = .systemGray3
 	}
 }
 
