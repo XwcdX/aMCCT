@@ -95,8 +95,15 @@ struct aMCCTApp: App {
                     set: { appEnvironment.coordinator.activeSheet = $0 }
                 )
             ) { _ in
-                SettingsSheet()
-                    .environment(appEnvironment)
+                switch appEnvironment.coordinator.activeSheet {
+                case .settings:
+                    SettingsSheet()
+                        .environment(appEnvironment)
+                case .graphSheet:
+                    GraphSheetView()
+                case nil:
+                    EmptyView()
+                }
             }
         }
     }

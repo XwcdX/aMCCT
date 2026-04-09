@@ -2,7 +2,6 @@ import SwiftUI
 
 struct OnboardingView: View {
     @Binding var hasSeenOnboarding: Bool
-    @Environment(AppEnvironment.self) private var env
     @State private var viewModel: OnboardingViewModel
     @State private var currentPage = 0
     
@@ -66,7 +65,7 @@ struct OnboardingView: View {
                 }
             }
         }
-        .background(Color.black.ignoresSafeArea())
+        .background(Color.baseWhitetoblack.ignoresSafeArea())
     }
     
     private func handleGetStarted() {
@@ -77,4 +76,13 @@ struct OnboardingView: View {
             }
         }
     }
+}
+
+private struct PreviewScreenTimeService: ScreenTimeServicing {
+    func requestAuthorization() async throws {
+    }
+}
+
+#Preview {
+    OnboardingView(hasSeenOnboarding: .constant(false), service: PreviewScreenTimeService())
 }

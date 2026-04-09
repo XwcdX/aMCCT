@@ -1,21 +1,21 @@
 enum StoreItemType: String, Codable, CaseIterable, Sendable {
     case sticker
-    case brainSkin
+    case wallpaper
     case profileBorder
 
     var displayName: String {
         switch self {
         case .sticker:       return "Stickers"
-        case .brainSkin:     return "Brain Skins"
-        case .profileBorder: return "Profile Borders"
+        case .wallpaper:     return "Wallpapers"
+        case .profileBorder: return "Borders"
         }
     }
 
     var icon: String {
         switch self {
         case .sticker:       return "face.smiling"
-        case .brainSkin:     return "cube.transparent"
-        case .profileBorder: return "circle.dotted"
+        case .wallpaper:     return "photo"
+        case .profileBorder: return "person.crop.circle.badge.checkmark"
         }
     }
 }

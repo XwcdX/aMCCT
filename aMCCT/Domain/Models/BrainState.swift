@@ -14,7 +14,7 @@ import SwiftData
     init() {
         self.actualLevel             = 1
         self.currentLevel            = 1
-        self.points                  = 0
+        self.points                  = 3000
         self.dailyLevelIncreaseCount = 0
         self.dailyLevelDecreaseCount = 0
         self.dailyCounterResetDate   = Calendar.current.startOfDay(for: .now)

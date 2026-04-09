@@ -1,6 +1,6 @@
 import Foundation
 
-struct StoreCatalogItem {
+struct StoreCatalogItem: Identifiable, Hashable {
     let id: String
     let type: StoreItemType
     let price: Int
@@ -10,7 +10,7 @@ struct StoreCatalogItem {
 }
 
 enum StoreCatalog {
-    static let all: [StoreCatalogItem] = stickers + brainSkins + profileBorders
+    static let all: [StoreCatalogItem] = stickers + wallpaper + profileBorders
 
     // MARK: - Stickers (3)
     static let stickers: [StoreCatalogItem] = [
@@ -19,52 +19,60 @@ enum StoreCatalog {
             type: .sticker,
             price: 50,
             name: "Spark",
-            description: "A small flame — for every friction that lit something up.",
-            assetName: "sticker_spark"
+            description: "Every friction lit something up.",
+            assetName: "StickerIdea"
         ),
         .init(
             id: "sticker_iron",
             type: .sticker,
             price: 120,
             name: "Iron Mind",
-            description: "Forged through resistance. Wear it with intent.",
-            assetName: "sticker_iron"
+            description: "Forged through resistance.",
+            assetName: "StickerGym"
         ),
         .init(
             id: "sticker_ghost",
             type: .sticker,
             price: 200,
             name: "Ghost Mode",
-            description: "You were bored. You chose not to scroll. Nobody saw it. You did.",
-            assetName: "sticker_ghost"
+            description: "Nobody saw it. You did.",
+            assetName: "StickerReady"
         )
     ]
 
-    // MARK: - Brain Skins (3)
-    static let brainSkins: [StoreCatalogItem] = [
+    // MARK: - Wallpaper (3)
+    static let wallpaper: [StoreCatalogItem] = [
         .init(
-            id: "skin_crystal",
-            type: .brainSkin,
+            id: "wallpaper_bibi_brain",
+            type: .wallpaper,
             price: 150,
-            name: "Crystal",
-            description: "Cold, clear, unshakeable.",
-            assetName: "skin_crystal"
+            name: "Bibi Brain",
+            description: "Grows along hard choices.",
+            assetName: "Wallpaper-1"
         ),
         .init(
-            id: "skin_ember",
-            type: .brainSkin,
+            id: "wallpaper_bibi_activities",
+            type: .wallpaper,
             price: 300,
-            name: "Ember",
-            description: "Burning slow. The kind of fire that doesn't go out.",
-            assetName: "skin_ember"
+            name: "Bibi Stacks",
+            description: "Built through discipline.",
+            assetName: "Wallpaper-2"
         ),
         .init(
-            id: "skin_void",
-            type: .brainSkin,
+            id: "wallpaper_grit_buddies",
+            type: .wallpaper,
             price: 500,
-            name: "Void",
-            description: "Beyond distraction. Beyond noise. Just signal.",
-            assetName: "skin_void"
+            name: "Bibi Buddies",
+            description: "Trained by consistency.",
+            assetName: "Wallpaper-3"
+        ),
+        .init(
+            id: "wallpaper_bibi_tired",
+            type: .wallpaper,
+            price: 700,
+            name: "Bibi Tired",
+            description: "Harder but stronger.",
+            assetName: "Wallpaper-4"
         )
     ]
 
@@ -76,7 +84,7 @@ enum StoreCatalog {
             price: 80,
             name: "Pulse",
             description: "A quiet rhythm. Still going.",
-            assetName: "border_pulse"
+            assetName: "StickerBalon"
         ),
         .init(
             id: "border_arc",
@@ -84,15 +92,15 @@ enum StoreCatalog {
             price: 180,
             name: "Arc",
             description: "Every streak leaves a mark.",
-            assetName: "border_arc"
+            assetName: "StickerCumlaude"
         ),
         .init(
             id: "border_crown",
             type: .profileBorder,
             price: 400,
             name: "Crown",
-            description: "Reserved for those who showed up.",
-            assetName: "border_crown"
+            description: "For those who showed up.",
+            assetName: "StickerHalo"
         )
     ]
 }

@@ -7,38 +7,51 @@ struct StoreView: View {
     @Query private var allItems: [StoreItem]
 
     @State private var isCollectionPresented = false
-    @State private var selectedRange = "wallpaper"
+    @State private var selectedType: StoreItemType = .wallpaper
+    @State private var pendingPurchaseItem: StoreCatalogItem?
 
     private let columns = [
+        GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12)
     ]
 
+    private var availableTypes: [StoreItemType] {
+        StoreItemType.allCases.filter { type in
+            StoreCatalog.all.contains(where: { $0.type == type })
+        }
+    }
+
+    private var itemsById: [String: StoreItem] {
+        Dictionary(uniqueKeysWithValues: allItems.map { ($0.id, $0) })
+    }
+
+    private var visibleCatalogItems: [StoreCatalogItem] {
+        StoreCatalog.all.filter { $0.type == selectedType }
+    }
+
+    private var purchasedItems: [StoreItem] {
+        allItems
+            .filter { $0.isPurchased }
+            .sorted { ($0.purchasedAt ?? .distantPast) > ($1.purchasedAt ?? .distantPast) }
+    }
+
     var body: some View {
         VStack(spacing: 0) {
-            VStack(spacing: 20) {
+            VStack(spacing: 15) {
                 storeHeader
                 
                 SegmentedControl(
-                    selection: $selectedRange,
-                    accessibilityLabel: "Graph range",
-                    "wallpaper",
-                    "sticker",
-                    "booster"
+                    selection: $selectedType,
+                    options: availableTypes,
+                    accessibilityLabel: "Store category",
+                    title: { $0.displayName }
                 )
                 
                 ScrollView {
                     LazyVGrid(columns: columns, spacing: 12) {
-                        let filteredItems = allItems.filter { $0.type.rawValue == selectedRange }
-
-                        if filteredItems.isEmpty {
-                            ForEach(0..<6, id: \.self) { _ in
-                                placeholderSquareCard
-                            }
-                        } else {
-                            ForEach(filteredItems, id: \.id) { item in
-                                storeGridCell(for: item)
-                            }
+                        ForEach(visibleCatalogItems, id: \.id) { catalogItem in
+                            storeGridCell(for: catalogItem)
                         }
                     }
                 }
@@ -47,6 +60,23 @@ struct StoreView: View {
             .padding(.horizontal, 20)
         }
         .background(.baseWhitetoblack)
+        .alert(
+            "Are you sure you want to buy \(pendingPurchaseItem?.name ?? "this item")?",
+            isPresented: Binding(
+                get: { pendingPurchaseItem != nil },
+                set: { if !$0 { pendingPurchaseItem = nil } }
+            ),
+            presenting: pendingPurchaseItem
+        ) { catalogItem in
+            Button("Buy") {
+                confirmPurchase(for: catalogItem)
+            }
+            Button("Cancel", role: .cancel) {
+                pendingPurchaseItem = nil
+            }
+        } message: { catalogItem in
+            Text("This will spend \(catalogItem.price) points.")
+        }
         .onAppear {
             print("[StoreView] appeared — allItems count: \(allItems.count)")
             for item in allItems {
@@ -57,8 +87,7 @@ struct StoreView: View {
             }
         }
         .sheet(isPresented: $isCollectionPresented) {
-            // TODO: CollectionView — owned items
-            Text("My Collection")
+            CollectionSheetView(items: purchasedItems)
                 .presentationDetents([.medium, .large])
         }
     }
@@ -110,24 +139,28 @@ struct StoreView: View {
         }
     }
 
-    private func storeGridCell(for item: StoreItem) -> some View {
-        placeholderSquareCard
+    private func storeGridCell(for catalogItem: StoreCatalogItem) -> some View {
+        let dbItem = itemsById[catalogItem.id]
+        let isPurchased = dbItem?.isPurchased ?? false
+
+        return StoreItemCard(
+            imageName: catalogItem.assetName,
+            title: catalogItem.name,
+            bodyText: catalogItem.price > 0 ? "\(catalogItem.price) points" : "Free",
+            buyTitle: isPurchased ? "Bought" : "Buy",
+            buyButtonColor: isPurchased ? .gray : .blue,
+            isBuyEnabled: !isPurchased,
+            isLocked: isPurchased
+        ) {
+            guard !isPurchased else { return }
+            pendingPurchaseItem = catalogItem
+        }
     }
 
+    private func confirmPurchase(for catalogItem: StoreCatalogItem) {
+        defer { pendingPurchaseItem = nil }
 
-    private var placeholderSquareCard: some View {
-        RoundedRectangle(cornerRadius: 14)
-            .fill(Color(.secondarySystemBackground))
-            .frame(maxWidth: .infinity)
-            .aspectRatio(1, contentMode: .fit)
-        .background(
-            RoundedRectangle(cornerRadius: 14)
-                .fill(.clear)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .strokeBorder(Color.baseBlacktoWhite.opacity(0.2), lineWidth: 1)
-        )
+        viewModel.purchaseCatalogItem(catalogItem)
     }
 }
 
