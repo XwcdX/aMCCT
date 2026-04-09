@@ -1,73 +1,82 @@
 import SwiftUI
+import SharedKit
+import FamilyControls
 
 struct SettingsSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppEnvironment.self) private var appEnvironment
     
-    // MARK: - Mock State for UI
-    // Your teammate will eventually replace these with the real ScreenTime data model
-    @State private var entTiktok = true
-    @State private var entInstagram = true
-    @State private var entX = true
-    @State private var entThreads = true
-    @State private var entYoutube1 = false
-    @State private var entMobileLegends = false
-    @State private var entSpotify = false
-    @State private var entYoutube2 = false
+    @State private var selection = FamilyActivitySelection()
+    @State private var preventDeletion = false
     
-    @State private var socTiktok = true
-    @State private var socInstagram = true
-    @State private var socX = true
-    @State private var socThreads = true
+    private let tokenStore = SharedTokenStore()
 
     var body: some View {
         NavigationStack {
-            List {
-                Section {
-                    Toggle("Tiktok", isOn: $entTiktok)
-                    Toggle("Instagram", isOn: $entInstagram)
-                    Toggle("X", isOn: $entX)
-                    Toggle("Threads", isOn: $entThreads)
-                    Toggle("Youtube", isOn: $entYoutube1)
-                    Toggle("Mobile Legends", isOn: $entMobileLegends)
-                    Toggle("Spotify", isOn: $entSpotify)
-                    Toggle("Youtube", isOn: $entYoutube2)
-                } header: {
-                    Text("Entertainment")
-                        .textCase(nil)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
+            VStack(spacing: 0) {
+                Text("Select the apps or categories you want to shield. You'll need to complete a task to open them.")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
+                    .padding(.bottom, 12)
 
-                Section {
-                    Toggle("Tiktok", isOn: $socTiktok)
-                    Toggle("Instagram", isOn: $socInstagram)
-                    Toggle("X", isOn: $socX)
-                    Toggle("Threads", isOn: $socThreads)
-                } header: {
-                    Text("Social")
-                        .textCase(nil)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                VStack(spacing: 0) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Prevent App Deletion")
+                                .font(.body)
+                            Text("Stop yourself from deleting apps to bypass shields")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Spacer()
+                        
+                        Toggle("", isOn: $preventDeletion)
+                            .labelsHidden()
+                            .tint(.blue)
+                    }
+                    .padding(.vertical, 10)
+                    .padding(.horizontal, 16)
+                    .background(Color(uiColor: .secondarySystemGroupedBackground))
+                    .cornerRadius(12)
                 }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 20)
+                FamilyActivityPicker(selection: $selection)
             }
-            .listStyle(.grouped)
-            .navigationTitle("Settings")
+            .background(Color(uiColor: .systemGroupedBackground))
+            .navigationTitle("Protection Rules")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.blue)
-                    .buttonBorderShape(.capsule)
-                    .controlSize(.regular)
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
                 }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") { handleSave() }
+                    .fontWeight(.bold)
+                }
+            }
+            .onAppear {
+                selection = tokenStore.load()
+                preventDeletion = tokenStore.loadDeletionContext()
             }
         }
     }
-}
 
-#Preview {
-    SettingsSheet()
+    private func handleSave() {
+        do {
+            try tokenStore.save(selection)
+            tokenStore.saveDeletionContext(prevent: preventDeletion)
+            Task {
+                try? await appEnvironment.shieldService.applyShields(to: selection)
+            }
+            dismiss()
+        } catch {
+            print("Save failed: \(error)")
+        }
+    }
 }

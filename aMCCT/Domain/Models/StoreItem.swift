@@ -5,7 +5,7 @@ import SwiftData
     var id: String
     var type: StoreItemType
     var name: String
-    var itemDescription: String
+    var itemDescription: String?
     var assetName: String
     var price: Int
     var isPurchased: Bool
@@ -16,7 +16,7 @@ import SwiftData
         type: StoreItemType,
         price: Int,
         name: String,
-        description: String,
+        description: String?,
         assetName: String
     ) {
         self.id              = id
