@@ -1,6 +1,6 @@
 import Foundation
 
-struct StoreCatalogItem {
+struct StoreCatalogItem: Identifiable, Hashable {
     let id: String
     let type: StoreItemType
     let price: Int
@@ -54,7 +54,7 @@ enum StoreCatalog {
             id: "wallpaper_bibi_activities",
             type: .wallpaper,
             price: 300,
-            name: "Bibi Activities",
+            name: "Bibi Stacks",
             description: "Built through discipline.",
             assetName: "Wallpaper-2"
         ),
@@ -62,7 +62,7 @@ enum StoreCatalog {
             id: "wallpaper_grit_buddies",
             type: .wallpaper,
             price: 500,
-            name: "Grit Buddies",
+            name: "Bibi Buddies",
             description: "Trained by consistency.",
             assetName: "Wallpaper-3"
         ),

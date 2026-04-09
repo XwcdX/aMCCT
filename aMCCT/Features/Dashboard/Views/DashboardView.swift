@@ -8,7 +8,7 @@ struct DashboardView: View {
     var body: some View {
         GeometryReader { geo in
             ZStack(alignment: .top) {
-                VStack(spacing: 0) {
+                VStack(spacing: 15) {
                     topBar
                     
                     BrainSceneView(brainLevel: viewModel.brainLevel)
@@ -16,7 +16,7 @@ struct DashboardView: View {
                         .frame(height: geo.size.height * 0.25)
                     
                     statsStrip
-                        .padding(20)
+                        .padding(.horizontal,20)
                         .onTapGesture {
                             appCoordinator.showGraph()
                         }
@@ -108,7 +108,7 @@ struct DashboardView: View {
                 accent: .red.opacity(0.7)
             )
         }
-        .padding(.vertical, 14)
+        .padding(.vertical, 8)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color.baseBlacktoWhite.opacity(0.5))

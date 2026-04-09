@@ -5,6 +5,9 @@ struct StoreItemCard: View {
 	let title: String
 	let bodyText: String
 	let buyTitle: String
+	let buyButtonColor: Color
+	let isBuyEnabled: Bool
+	let isLocked: Bool
 	let onBuy: () -> Void
 
 	init(
@@ -12,12 +15,18 @@ struct StoreItemCard: View {
 		title: String,
 		bodyText: String,
 		buyTitle: String = "Buy",
+		buyButtonColor: Color = .blue,
+		isBuyEnabled: Bool = true,
+		isLocked: Bool = false,
 		onBuy: @escaping () -> Void
 	) {
 		self.imageName = imageName
 		self.title = title
 		self.bodyText = bodyText
 		self.buyTitle = buyTitle
+		self.buyButtonColor = buyButtonColor
+		self.isBuyEnabled = isBuyEnabled
+		self.isLocked = isLocked
 		self.onBuy = onBuy
 	}
 
@@ -52,14 +61,16 @@ struct StoreItemCard: View {
 			ActionButton(
 				buyTitle,
 				icon: nil,
-				color: .blue,
+				color: buyButtonColor,
 				shape: .capsule,
 				size: .compact,
 				isFullWidth: false,
+				isEnabled: isBuyEnabled,
 				action: onBuy
 			)
 		}
 		.padding(10)
+		.opacity(isLocked ? 0.72 : 1.0)
 		.background(
 			RoundedRectangle(cornerRadius: 24, style: .continuous)
 				.fill(Color(.secondarySystemBackground))

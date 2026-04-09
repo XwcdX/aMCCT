@@ -8,6 +8,7 @@ struct StoreView: View {
 
     @State private var isCollectionPresented = false
     @State private var selectedType: StoreItemType = .wallpaper
+    @State private var pendingPurchaseItem: StoreCatalogItem?
 
     private let columns = [
         GridItem(.flexible(), spacing: 12),
@@ -29,9 +30,15 @@ struct StoreView: View {
         StoreCatalog.all.filter { $0.type == selectedType }
     }
 
+    private var purchasedItems: [StoreItem] {
+        allItems
+            .filter { $0.isPurchased }
+            .sorted { ($0.purchasedAt ?? .distantPast) > ($1.purchasedAt ?? .distantPast) }
+    }
+
     var body: some View {
         VStack(spacing: 0) {
-            VStack(spacing: 20) {
+            VStack(spacing: 15) {
                 storeHeader
                 
                 SegmentedControl(
@@ -53,6 +60,23 @@ struct StoreView: View {
             .padding(.horizontal, 20)
         }
         .background(.baseWhitetoblack)
+        .alert(
+            "Are you sure you want to buy \(pendingPurchaseItem?.name ?? "this item")?",
+            isPresented: Binding(
+                get: { pendingPurchaseItem != nil },
+                set: { if !$0 { pendingPurchaseItem = nil } }
+            ),
+            presenting: pendingPurchaseItem
+        ) { catalogItem in
+            Button("Buy") {
+                confirmPurchase(for: catalogItem)
+            }
+            Button("Cancel", role: .cancel) {
+                pendingPurchaseItem = nil
+            }
+        } message: { catalogItem in
+            Text("This will spend \(catalogItem.price) points.")
+        }
         .onAppear {
             print("[StoreView] appeared — allItems count: \(allItems.count)")
             for item in allItems {
@@ -63,8 +87,7 @@ struct StoreView: View {
             }
         }
         .sheet(isPresented: $isCollectionPresented) {
-            // TODO: CollectionView — owned items
-            Text("My Collection")
+            CollectionSheetView(items: purchasedItems)
                 .presentationDetents([.medium, .large])
         }
     }
@@ -123,15 +146,74 @@ struct StoreView: View {
         return StoreItemCard(
             imageName: catalogItem.assetName,
             title: catalogItem.name,
-            bodyText: catalogItem.description,
-            buyTitle: isPurchased ? "Owned" : "Buy"
+            bodyText: catalogItem.price > 0 ? "\(catalogItem.price) points" : "Free",
+            buyTitle: isPurchased ? "Bought" : "Buy",
+            buyButtonColor: isPurchased ? .gray : .blue,
+            isBuyEnabled: !isPurchased,
+            isLocked: isPurchased
         ) {
             guard !isPurchased else { return }
-            guard let dbItem else {
-                print("[StoreView] Missing DB item for catalog id: \(catalogItem.id)")
-                return
+            pendingPurchaseItem = catalogItem
+        }
+    }
+
+    private func confirmPurchase(for catalogItem: StoreCatalogItem) {
+        defer { pendingPurchaseItem = nil }
+
+        viewModel.purchaseCatalogItem(catalogItem)
+    }
+}
+
+private struct CollectionSheetView: View {
+    let items: [StoreItem]
+
+    private let columns = [
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12)
+    ]
+
+    var body: some View {
+        NavigationStack {
+            Group {
+                if items.isEmpty {
+                    VStack(spacing: 12) {
+                        Image(systemName: "books.vertical")
+                            .font(.system(size: 28, weight: .semibold))
+                            .foregroundStyle(.secondary)
+
+                        Text("No items yet")
+                            .font(.headline)
+
+                        Text("Buy items in the store and they will appear here.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding(24)
+                } else {
+                    ScrollView {
+                        LazyVGrid(columns: columns, spacing: 12) {
+                            ForEach(items, id: \.id) { item in
+                                StoreItemCard(
+                                    imageName: item.assetName,
+                                    title: item.name,
+                                    bodyText: item.itemDescription ?? "Owned item",
+                                    buyTitle: "Bought",
+                                    buyButtonColor: .gray,
+                                    isBuyEnabled: false,
+                                    isLocked: true
+                                ) {
+                                }
+                            }
+                        }
+                        .padding(16)
+                    }
+                }
             }
-            viewModel.purchaseItem(dbItem)
+            .navigationTitle("My Collection")
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }
