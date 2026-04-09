@@ -18,7 +18,7 @@ struct DashboardView: View {
                     statsStrip
                         .padding(20)
                         .onTapGesture {
-                            appCoordinator.showHistory()
+                            appCoordinator.showGraph()
                         }
                     
                     StoreView()

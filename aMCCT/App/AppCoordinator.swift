@@ -8,6 +8,7 @@ final class AppCoordinator {
 
     enum SheetDestination: Identifiable {
         case settings
+        case graphSheet
         var id: Self { self }
     }
 
@@ -25,8 +26,8 @@ final class AppCoordinator {
         activeSheet = .settings
     }
     
-    func showHistory() {
-        path.append(AppDestination.distractionHistory)
+    func showGraph() {
+        activeSheet = .graphSheet
     }
     
     func triggerFrictionTask() {
