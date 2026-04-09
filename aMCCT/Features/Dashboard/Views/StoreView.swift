@@ -164,60 +164,6 @@ struct StoreView: View {
     }
 }
 
-private struct CollectionSheetView: View {
-    let items: [StoreItem]
-
-    private let columns = [
-        GridItem(.flexible(), spacing: 12),
-        GridItem(.flexible(), spacing: 12),
-        GridItem(.flexible(), spacing: 12)
-    ]
-
-    var body: some View {
-        NavigationStack {
-            Group {
-                if items.isEmpty {
-                    VStack(spacing: 12) {
-                        Image(systemName: "books.vertical")
-                            .font(.system(size: 28, weight: .semibold))
-                            .foregroundStyle(.secondary)
-
-                        Text("No items yet")
-                            .font(.headline)
-
-                        Text("Buy items in the store and they will appear here.")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .padding(24)
-                } else {
-                    ScrollView {
-                        LazyVGrid(columns: columns, spacing: 12) {
-                            ForEach(items, id: \.id) { item in
-                                StoreItemCard(
-                                    imageName: item.assetName,
-                                    title: item.name,
-                                    bodyText: item.itemDescription ?? "Owned item",
-                                    buyTitle: "Bought",
-                                    buyButtonColor: .gray,
-                                    isBuyEnabled: false,
-                                    isLocked: true
-                                ) {
-                                }
-                            }
-                        }
-                        .padding(16)
-                    }
-                }
-            }
-            .navigationTitle("My Collection")
-            .navigationBarTitleDisplayMode(.inline)
-        }
-    }
-}
-
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(
