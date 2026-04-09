@@ -58,7 +58,6 @@ struct ActionButton: View {
         .opacity(isEnabled ? 1.0 : 0.5)
     }
 
-    // FIXED LOGIC
     private var currentShape: AnyShape {
         switch shape {
         case .roundedSquare:
