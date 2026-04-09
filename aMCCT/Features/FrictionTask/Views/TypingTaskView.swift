@@ -4,6 +4,7 @@ import SwiftData
 struct TypingTaskView: View {
     @ObservedObject var viewModel: FrictionTaskViewModel
     @State private var isFieldFocused = false
+    @State private var wallpaperIndex = Int.random(in: 1...4)
     
     @Query private var brainStates: [BrainState]
     
@@ -16,6 +17,7 @@ struct TypingTaskView: View {
             title: "TRAIN YOUR MIND",
             progress: viewModel.targetPhrase.isEmpty ? 0.0 : Double(viewModel.currentTextEntry.count) / Double(viewModel.targetPhrase.count),
             currentLevel: currentLevel,
+            backgroundImageName: "Wallpaper-\(wallpaperIndex)",
             onCancel: {
                 exit(0)
             }
@@ -67,7 +69,7 @@ private extension TypingTaskView {
                 .lineSpacing(8)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.baseBlacktoWhite)
-                .opacity(0.1)
+                .opacity(0.3)
 
             Text(renderedProgressString)
                 .font(.title2.bold())
@@ -83,6 +85,9 @@ private extension TypingTaskView {
             .frame(width: 1, height: 1)
             .opacity(0.01)
         }
+        .padding(.vertical, 24)
+        .padding(.horizontal, 16)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
         .contentShape(Rectangle())
         .onTapGesture {
             if !viewModel.isTaskComplete && !viewModel.isLoading {

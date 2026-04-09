@@ -4,15 +4,14 @@ struct FrictionCard<Content: View>: View {
     var title: String
     var progress: Double
     var currentLevel: Int
+    var backgroundImageName: String?
     var onCancel: () -> Void
     @ViewBuilder var content: Content
     
+    @Environment(\.colorScheme) private var colorScheme
+    
     var body: some View {
         ZStack(alignment: .top) {
-            Color.clear
-                .background(.baseWhitetoblack)
-                .ignoresSafeArea()
-            
             VStack(spacing: 0) {
                 Text(title)
                     .font(.system(size: 28, weight: .black))
@@ -44,6 +43,26 @@ struct FrictionCard<Content: View>: View {
             .padding(.top, 16)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(
+            Group {
+                if let bgImage = backgroundImageName {
+                    Image(bgImage)
+                        .resizable()
+                        .scaledToFill()
+                        .ignoresSafeArea(.all)
+                        .overlay(
+                            (colorScheme == .dark ? Color.black : Color.white)
+                                .opacity(0.65)
+                                .ignoresSafeArea(.all)
+                        )
+                } else {
+                    Color.clear
+                        .background(.baseWhitetoblack)
+                        .ignoresSafeArea(.all)
+                }
+            }
+            .ignoresSafeArea(.all)
+        )
     }
 }
 
@@ -52,6 +71,7 @@ struct FrictionCard<Content: View>: View {
         title: "FOLLOW THE MOVING BUTTON!",
         progress: 0.35,
         currentLevel: 1,
+        backgroundImageName: "Wallpaper-1",
         onCancel: {
             print("User gave up. Redirect to Home Screen.")
         }
