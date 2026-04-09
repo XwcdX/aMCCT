@@ -1,3 +1,4 @@
+import SharedKit
 import SwiftData
 import SwiftUI
 
@@ -6,6 +7,7 @@ struct aMCCTApp: App {
     let container: ModelContainer
     @State private var appEnvironment: AppEnvironment
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding: Bool = false
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
         do {
@@ -60,22 +62,22 @@ struct aMCCTApp: App {
                             Text("Store Page")
                         }
                     }
+                    .fullScreenCover(
+                        isPresented: .init(
+                            get: { !hasSeenOnboarding },
+                            set: { _ in }
+                        )
+                    ) {
+                        OnboardingView(
+                            hasSeenOnboarding: $hasSeenOnboarding,
+                            service: appEnvironment.screenTimeService
+                        )
+                        .environment(appEnvironment)
+                        .modelContainer(container)
+                        .interactiveDismissDisabled()
+                    }
             }
             .modelContainer(container)
-            .fullScreenCover(
-                isPresented: .init(
-                    get: { !hasSeenOnboarding },
-                    set: { _ in }
-                )
-            ) {
-                OnboardingView(
-                    hasSeenOnboarding: $hasSeenOnboarding,
-                    service: appEnvironment.screenTimeService
-                )
-                .environment(appEnvironment)
-                .modelContainer(container)
-                .interactiveDismissDisabled()
-            }
 
             .fullScreenCover(
                 item: .init(
@@ -85,7 +87,9 @@ struct aMCCTApp: App {
                     }
                 )
             ) { _ in
-                Text("Friction Task View Goes Here")
+                FrictionTaskCoordinatorView()
+                    .environment(appEnvironment)
+                    .modelContainer(container)
                     .interactiveDismissDisabled()
             }
 
@@ -105,6 +109,37 @@ struct aMCCTApp: App {
                     EmptyView()
                 }
             }
+
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase == .active {
+                    checkForPendingTaks()
+                    reShieldIfNeeded()
+                }
+            }
+            .onOpenURL { _ in
+                checkForPendingTaks()
+            }
+        }
+    }
+
+    private func checkForPendingTaks() {
+        guard let defaults = UserDefaults(suiteName: "group.com.oxy.aMCCT")
+        else { return }
+        let needTask = defaults.bool(forKey: "aMCCT.needsFrictionTask")
+        if needTask {
+            defaults.set(false, forKey: "aMCCT.needsFrictionTask")
+            appEnvironment.coordinator.triggerFrictionTask()
+        }
+    }
+
+    private func reShieldIfNeeded() {
+        guard let defaults = UserDefaults(suiteName: "group.com.oxy.aMCCT")
+        else { return }
+        guard defaults.bool(forKey: "aMCCT.pendingReShield") else { return }
+        defaults.set(false, forKey: "aMCCT.pendingReShield")
+        Task {
+            let selection = SharedTokenStore().load()
+            try? await appEnvironment.shieldService.applyShields(to: selection)
         }
     }
 }

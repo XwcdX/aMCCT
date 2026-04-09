@@ -19,6 +19,7 @@ final class OnboardingViewModel {
         
         do {
             try await screenTimeService.requestAuthorization()
+            try await screenTimeService.startMonitoring()
             isAuthorizing = false
             return true
         } catch {

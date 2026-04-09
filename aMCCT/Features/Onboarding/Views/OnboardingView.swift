@@ -81,6 +81,9 @@ struct OnboardingView: View {
 private struct PreviewScreenTimeService: ScreenTimeServicing {
     func requestAuthorization() async throws {
     }
+    
+    func startMonitoring() async throws {
+    }
 }
 
 #Preview {

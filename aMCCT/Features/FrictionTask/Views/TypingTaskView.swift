@@ -1,20 +1,26 @@
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct TypingTaskView: View {
-    @ObservedObject var viewModel: FrictionTaskViewModel
+    @Bindable var viewModel: FrictionTaskViewModel
+    var onSuccess: () -> Void
+    
     @State private var isFieldFocused = false
-    
     @Query private var brainStates: [BrainState]
-    
+
     private var currentLevel: Int {
         brainStates.first?.currentLevel ?? 1
+    }
+
+    private var progressValue: Double {
+        guard !viewModel.targetPhrase.isEmpty else { return 0 }
+        return Double(viewModel.currentTextEntry.count) / Double(viewModel.targetPhrase.count)
     }
 
     var body: some View {
         FrictionCard(
             title: "TRAIN YOUR MIND",
-            progress: viewModel.targetPhrase.isEmpty ? 0.0 : Double(viewModel.currentTextEntry.count) / Double(viewModel.targetPhrase.count),
+            progress: progressValue,
             currentLevel: currentLevel,
             onCancel: {
                 exit(0)
@@ -23,10 +29,18 @@ struct TypingTaskView: View {
             VStack(spacing: 40) {
                 Spacer()
 
-                Text("Focus on every character")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                
+                VStack(spacing: 8) {
+                    Text("Focus on every character")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    
+                    if viewModel.isBackspaceDisabled {
+                        Text("No Backspace: Accuracy is mandatory")
+                            .font(.caption2.bold())
+                            .foregroundStyle(.red.opacity(0.8))
+                    }
+                }
+
                 ZStack {
                     if viewModel.isLoading {
                         loadingState
@@ -35,11 +49,14 @@ struct TypingTaskView: View {
                     }
                 }
                 .frame(minHeight: 150)
-                
+
                 Spacer()
-                
+
                 if viewModel.isTaskComplete {
-                    continueButton
+                    ActionButton("CONTINUE", color: .baseBlacktoWhite, shape: .capsule) {
+                        onSuccess()
+                    }
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
             .padding(.horizontal, 24)
@@ -48,14 +65,19 @@ struct TypingTaskView: View {
                 handleLoadingChange(loading)
             }
             .onChange(of: viewModel.isTaskComplete) { _, complete in
-                if complete { isFieldFocused = false }
+                if complete {
+                    // Smoothly dismiss keyboard
+                    withAnimation { isFieldFocused = false }
+                }
             }
         }
     }
 }
 
-private extension TypingTaskView {
-    var typingArea: some View {
+// MARK: - Components
+
+extension TypingTaskView {
+    private var typingArea: some View {
         let textBinding = Binding(
             get: { viewModel.currentTextEntry },
             set: { viewModel.handleTypingInput($0) }
@@ -80,8 +102,8 @@ private extension TypingTaskView {
                 maxLength: viewModel.targetPhrase.count,
                 disableBackspace: viewModel.isBackspaceDisabled
             )
-            .frame(width: 1, height: 1)
-            .opacity(0.01)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .opacity(0.011)
         }
         .contentShape(Rectangle())
         .onTapGesture {
@@ -91,7 +113,7 @@ private extension TypingTaskView {
         }
     }
 
-    var loadingState: some View {
+    private var loadingState: some View {
         VStack(spacing: 16) {
             ProgressView()
                 .scaleEffect(1.2)
@@ -101,26 +123,11 @@ private extension TypingTaskView {
         }
         .transition(.opacity.combined(with: .scale(scale: 0.9)))
     }
-
-    var continueButton: some View {
-        Button(action: {
-            print("Action: Task complete, unlocking app.")
-        }) {
-            Text("CONTINUE")
-                .font(.headline.bold())
-                .foregroundStyle(.baseWhitetoblack)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(.baseBlacktoWhite)
-                .cornerRadius(14)
-        }
-        .padding(.bottom, 20)
-        .transition(.move(edge: .bottom).combined(with: .opacity))
-    }
 }
 
-private extension TypingTaskView {
-    var renderedProgressString: AttributedString {
+// MARK: - String Rendering
+extension TypingTaskView {
+    private var renderedProgressString: AttributedString {
         let targetChars = Array(viewModel.targetPhrase)
         let typedChars = Array(viewModel.currentTextEntry)
         var result = AttributedString()
@@ -143,16 +150,17 @@ private extension TypingTaskView {
     }
 }
 
-private extension TypingTaskView {
-    func setupInitialState() {
+// MARK: - Lifecycle Logic
+extension TypingTaskView {
+    private func setupInitialState() {
         if !viewModel.isLoading {
             isFieldFocused = true
         }
     }
-    
-    func handleLoadingChange(_ loading: Bool) {
+
+    private func handleLoadingChange(_ loading: Bool) {
         if !loading {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 withAnimation { isFieldFocused = true }
             }
         }

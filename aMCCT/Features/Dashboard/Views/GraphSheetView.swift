@@ -8,7 +8,6 @@ struct GraphSheetView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    // MARK: brain level graph
                     GraphSummaryView(
                         average: viewModel.currentBrainLevelAverage,
                         periodLabel: viewModel.periodLabel

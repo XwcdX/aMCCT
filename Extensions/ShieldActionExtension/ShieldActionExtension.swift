@@ -1,9 +1,8 @@
 import Foundation
 import ManagedSettings
+import UserNotifications
+import SharedKit
 
-// Override the functions below to customize the shield actions used in various situations.
-// The system provides a default response for any functions that your subclass doesn't override.
-// Make sure that your class name matches the NSExtensionPrincipalClass in your Info.plist.
 class ShieldActionExtension: ShieldActionDelegate {
     private let appGroupID = "group.com.oxy.aMCCT"
 
@@ -14,6 +13,7 @@ class ShieldActionExtension: ShieldActionDelegate {
     ) {
         handleAction(
             action,
+            type: .app,
             tokenData: try? JSONEncoder().encode(application),
             completionHandler: completionHandler
         )
@@ -26,6 +26,7 @@ class ShieldActionExtension: ShieldActionDelegate {
     ) {
         handleAction(
             action,
+            type: .webDomain,
             tokenData: try? JSONEncoder().encode(webDomain),
             completionHandler: completionHandler
         )
@@ -38,6 +39,7 @@ class ShieldActionExtension: ShieldActionDelegate {
     ) {
         handleAction(
             action,
+            type: .category,
             tokenData: try? JSONEncoder().encode(category),
             completionHandler: completionHandler
         )
@@ -45,17 +47,20 @@ class ShieldActionExtension: ShieldActionDelegate {
 
     private func handleAction(
         _ action: ShieldAction,
+        type: PendingUnlockTarget.TargetType,
         tokenData: Data?,
         completionHandler: @escaping (ShieldActionResponse) -> Void
     ) {
         switch action {
         case .primaryButtonPressed:
-            if let defaults = UserDefaults(suiteName: appGroupID) {
+            if let defaults = UserDefaults(suiteName: appGroupID),
+               let tokenData,
+               let data = try? JSONEncoder().encode(PendingUnlockTarget(type: type, tokenData: tokenData)) {
                 defaults.set(true, forKey: "aMCCT.needsFrictionTask")
-                if let data = tokenData {
-                    defaults.set(data, forKey: "aMCCT.pendingUnlockToken")
-                }
+                defaults.set(data, forKey: "aMCCT.pendingUnlockToken")
+                defaults.synchronize()
             }
+            sendTaskNotification()
             completionHandler(.close)
         case .secondaryButtonPressed:
             completionHandler(.close)
@@ -68,5 +73,16 @@ class ShieldActionExtension: ShieldActionDelegate {
         @unknown default:
             completionHandler(.defer)
         }
+    }
+    
+    private func sendTaskNotification() {
+        let content = UNMutableNotificationContent()
+        content.title = "Complete Your Task"
+        content.body = "Tap to open aMCCT and earn access."
+        content.sound = .default
+        content.categoryIdentifier = "FRICTION_TASK"
+        
+        let request = UNNotificationRequest(identifier: "friction-task-\(UUID().uuidString)", content: content, trigger: nil)
+        UNUserNotificationCenter.current().add(request)
     }
 }
