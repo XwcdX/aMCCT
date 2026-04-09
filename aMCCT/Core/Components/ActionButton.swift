@@ -5,6 +5,11 @@ struct ActionButton: View {
         case roundedSquare
         case capsule
     }
+
+    enum ButtonSize {
+        case regular
+        case compact
+    }
     
     let title: String?
     let icon: String?
@@ -12,6 +17,7 @@ struct ActionButton: View {
     let isEnabled: Bool
     let isFullWidth: Bool
     let shape: ButtonShape
+    let size: ButtonSize
     let action: () -> Void
 
     init(
@@ -19,6 +25,7 @@ struct ActionButton: View {
         icon: String? = nil,
         color: Color = .blue,
         shape: ButtonShape = .roundedSquare,
+        size: ButtonSize = .regular,
         isFullWidth: Bool = true,
         isEnabled: Bool = true,
         action: @escaping () -> Void
@@ -27,6 +34,7 @@ struct ActionButton: View {
         self.icon = icon
         self.color = color
         self.shape = shape
+        self.size = size
         self.isFullWidth = isFullWidth
         self.isEnabled = isEnabled
         self.action = action
@@ -43,11 +51,11 @@ struct ActionButton: View {
                         .fontWeight(.semibold)
                 }
             }
-            .font(.body)
-            .padding(.vertical, 14)
-            .padding(.horizontal, 24)
+            .font(size == .compact ? .caption : .body)
+            .padding(.vertical, size == .compact ? 7 : 14)
+            .padding(.horizontal, size == .compact ? 12 : 24)
             .frame(maxWidth: isFullWidth ? .infinity : nil)
-            .frame(minWidth: (title == nil) ? 50 : nil)
+            .frame(minWidth: (title == nil) ? (size == .compact ? 36 : 50) : nil)
             .background(color)
             .foregroundColor(.white)
             .clipShape(currentShape)

@@ -11,6 +11,7 @@ struct StoreView: View {
 
     private let columns = [
         GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12)
     ]
 
@@ -32,8 +33,15 @@ struct StoreView: View {
                         let filteredItems = allItems.filter { $0.type.rawValue == selectedRange }
 
                         if filteredItems.isEmpty {
-                            ForEach(0..<6, id: \.self) { _ in
-                                placeholderSquareCard
+                            ForEach(0..<6, id: \.self) { index in
+                                StoreItemCard(
+                                    imageName: "Wallpaper-1",
+                                    title: "Coming Soon",
+                                    bodyText: "20 Points",
+                                    buyTitle: "Buy"
+                                ) {
+                                    print("[StoreView] Placeholder tapped: \(index)")
+                                }
                             }
                         } else {
                             ForEach(filteredItems, id: \.id) { item in
@@ -111,23 +119,15 @@ struct StoreView: View {
     }
 
     private func storeGridCell(for item: StoreItem) -> some View {
-        placeholderSquareCard
-    }
-
-
-    private var placeholderSquareCard: some View {
-        RoundedRectangle(cornerRadius: 14)
-            .fill(Color(.secondarySystemBackground))
-            .frame(maxWidth: .infinity)
-            .aspectRatio(1, contentMode: .fit)
-        .background(
-            RoundedRectangle(cornerRadius: 14)
-                .fill(.clear)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .strokeBorder(Color.baseBlacktoWhite.opacity(0.2), lineWidth: 1)
-        )
+        StoreItemCard(
+            imageName: item.assetName,
+            title: item.name,
+            bodyText: item.itemDescription ?? "No description available.",
+            buyTitle: item.isPurchased ? "Owned" : "Buy"
+        ) {
+            guard !item.isPurchased else { return }
+            viewModel.purchaseItem(item)
+        }
     }
 }
 

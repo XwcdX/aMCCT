@@ -13,7 +13,7 @@ struct DashboardView: View {
                     
                     BrainSceneView(brainLevel: viewModel.brainLevel)
                         .frame(maxWidth: .infinity)
-                        .frame(height: geo.size.height * 0.42)
+                        .frame(height: geo.size.height * 0.25)
                     
                     statsStrip
                         .padding(20)
