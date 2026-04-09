@@ -6,16 +6,16 @@ enum StoreItemType: String, Codable, CaseIterable, Sendable {
     var displayName: String {
         switch self {
         case .sticker:       return "Stickers"
-        case .wallpaper:     return "wallpaper"
-        case .profileBorder: return "Profile Borders"
+        case .wallpaper:     return "Wallpapers"
+        case .profileBorder: return "Borders"
         }
     }
 
     var icon: String {
         switch self {
         case .sticker:       return "face.smiling"
-        case .wallpaper:     return "document"
-        case .profileBorder: return "circle.dotted"
+        case .wallpaper:     return "photo"
+        case .profileBorder: return "person.crop.circle.badge.checkmark"
         }
     }
 }

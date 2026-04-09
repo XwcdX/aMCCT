@@ -7,7 +7,7 @@ struct StoreView: View {
     @Query private var allItems: [StoreItem]
 
     @State private var isCollectionPresented = false
-    @State private var selectedRange = "wallpaper"
+    @State private var selectedType: StoreItemType = .wallpaper
 
     private let columns = [
         GridItem(.flexible(), spacing: 12),
@@ -15,38 +15,36 @@ struct StoreView: View {
         GridItem(.flexible(), spacing: 12)
     ]
 
+    private var availableTypes: [StoreItemType] {
+        StoreItemType.allCases.filter { type in
+            StoreCatalog.all.contains(where: { $0.type == type })
+        }
+    }
+
+    private var itemsById: [String: StoreItem] {
+        Dictionary(uniqueKeysWithValues: allItems.map { ($0.id, $0) })
+    }
+
+    private var visibleCatalogItems: [StoreCatalogItem] {
+        StoreCatalog.all.filter { $0.type == selectedType }
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             VStack(spacing: 20) {
                 storeHeader
                 
                 SegmentedControl(
-                    selection: $selectedRange,
-                    accessibilityLabel: "Graph range",
-                    "wallpaper",
-                    "sticker",
-                    "booster"
+                    selection: $selectedType,
+                    options: availableTypes,
+                    accessibilityLabel: "Store category",
+                    title: { $0.displayName }
                 )
                 
                 ScrollView {
                     LazyVGrid(columns: columns, spacing: 12) {
-                        let filteredItems = allItems.filter { $0.type.rawValue == selectedRange }
-
-                        if filteredItems.isEmpty {
-                            ForEach(0..<6, id: \.self) { index in
-                                StoreItemCard(
-                                    imageName: "Wallpaper-1",
-                                    title: "Coming Soon",
-                                    bodyText: "20 Points",
-                                    buyTitle: "Buy"
-                                ) {
-                                    print("[StoreView] Placeholder tapped: \(index)")
-                                }
-                            }
-                        } else {
-                            ForEach(filteredItems, id: \.id) { item in
-                                storeGridCell(for: item)
-                            }
+                        ForEach(visibleCatalogItems, id: \.id) { catalogItem in
+                            storeGridCell(for: catalogItem)
                         }
                     }
                 }
@@ -118,15 +116,22 @@ struct StoreView: View {
         }
     }
 
-    private func storeGridCell(for item: StoreItem) -> some View {
-        StoreItemCard(
-            imageName: item.assetName,
-            title: item.name,
-            bodyText: item.itemDescription ?? "No description available.",
-            buyTitle: item.isPurchased ? "Owned" : "Buy"
+    private func storeGridCell(for catalogItem: StoreCatalogItem) -> some View {
+        let dbItem = itemsById[catalogItem.id]
+        let isPurchased = dbItem?.isPurchased ?? false
+
+        return StoreItemCard(
+            imageName: catalogItem.assetName,
+            title: catalogItem.name,
+            bodyText: catalogItem.description,
+            buyTitle: isPurchased ? "Owned" : "Buy"
         ) {
-            guard !item.isPurchased else { return }
-            viewModel.purchaseItem(item)
+            guard !isPurchased else { return }
+            guard let dbItem else {
+                print("[StoreView] Missing DB item for catalog id: \(catalogItem.id)")
+                return
+            }
+            viewModel.purchaseItem(dbItem)
         }
     }
 }

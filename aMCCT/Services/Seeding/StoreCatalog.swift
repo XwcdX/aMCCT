@@ -19,24 +19,24 @@ enum StoreCatalog {
             type: .sticker,
             price: 50,
             name: "Spark",
-            description: "A small flame — for every friction that lit something up.",
-            assetName: "sticker_spark"
+            description: "Every friction lit something up.",
+            assetName: "StickerIdea"
         ),
         .init(
             id: "sticker_iron",
             type: .sticker,
             price: 120,
             name: "Iron Mind",
-            description: "Forged through resistance. Wear it with intent.",
-            assetName: "sticker_iron"
+            description: "Forged through resistance.",
+            assetName: "StickerGym"
         ),
         .init(
             id: "sticker_ghost",
             type: .sticker,
             price: 200,
             name: "Ghost Mode",
-            description: "You were bored. You chose not to scroll. Nobody saw it. You did.",
-            assetName: "sticker_ghost"
+            description: "Nobody saw it. You did.",
+            assetName: "StickerReady"
         )
     ]
 
@@ -47,8 +47,8 @@ enum StoreCatalog {
             type: .wallpaper,
             price: 150,
             name: "Bibi Brain",
-            description: "Grows with every hard choice.",
-            assetName: "Wallpaper 1"
+            description: "Grows along hard choices.",
+            assetName: "Wallpaper-1"
         ),
         .init(
             id: "wallpaper_bibi_activities",
@@ -56,7 +56,7 @@ enum StoreCatalog {
             price: 300,
             name: "Bibi Activities",
             description: "Built through discipline.",
-            assetName: "Wallpaper 2"
+            assetName: "Wallpaper-2"
         ),
         .init(
             id: "wallpaper_grit_buddies",
@@ -64,15 +64,15 @@ enum StoreCatalog {
             price: 500,
             name: "Grit Buddies",
             description: "Trained by consistency.",
-            assetName: "Wallpaper 3"
+            assetName: "Wallpaper-3"
         ),
         .init(
             id: "wallpaper_bibi_tired",
             type: .wallpaper,
             price: 700,
             name: "Bibi Tired",
-            description: "Choose hard. Get stronger.",
-            assetName: "Wallpaper 4"
+            description: "Harder but stronger.",
+            assetName: "Wallpaper-4"
         )
     ]
 
@@ -84,7 +84,7 @@ enum StoreCatalog {
             price: 80,
             name: "Pulse",
             description: "A quiet rhythm. Still going.",
-            assetName: "border_pulse"
+            assetName: "StickerBalon"
         ),
         .init(
             id: "border_arc",
@@ -92,15 +92,15 @@ enum StoreCatalog {
             price: 180,
             name: "Arc",
             description: "Every streak leaves a mark.",
-            assetName: "border_arc"
+            assetName: "StickerCumlaude"
         ),
         .init(
             id: "border_crown",
             type: .profileBorder,
             price: 400,
             name: "Crown",
-            description: "Reserved for those who showed up.",
-            assetName: "border_crown"
+            description: "For those who showed up.",
+            assetName: "StickerHalo"
         )
     ]
 }

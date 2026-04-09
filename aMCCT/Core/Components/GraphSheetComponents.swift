@@ -7,15 +7,6 @@ enum GraphChartStyle {
     case area
 }
 
-struct GraphSheetHeaderView: View {
-    var body: some View {
-        Text("Brain level progress")
-            .font(.title2.weight(.bold))
-            .foregroundStyle(.baseBlacktoWhite)
-            .frame(maxWidth: .infinity, alignment: .leading)
-    }
-}
-
 struct GraphSummaryView: View {
     let average: Double
     let periodLabel: String

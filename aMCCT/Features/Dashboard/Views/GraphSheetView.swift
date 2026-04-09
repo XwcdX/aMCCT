@@ -8,7 +8,7 @@ struct GraphSheetView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    GraphSheetHeaderView()
+                    // MARK: brain level graph
                     GraphSummaryView(
                         average: viewModel.currentBrainLevelAverage,
                         periodLabel: viewModel.periodLabel
@@ -45,6 +45,7 @@ struct GraphSheetView: View {
 
                     GraphSelectedPointView(selectedPoint: viewModel.selectedBrainPoint)
 
+                    // MARK: shield graph
                     GraphChartSectionView(
                         points: viewModel.currentShieldOpenPoints,
                         selectedRange: viewModel.selectedRange,
@@ -64,7 +65,11 @@ struct GraphSheetView: View {
                     )
 
                     GraphSelectedPointView(selectedPoint: viewModel.selectedShieldPoint)
+                    
+                    // MARK: culprit apps
                     GraphCulpritAppsView(apps: viewModel.culpritApps)
+                    
+                    // MARK: about amcc
                     GraphAboutView()
                 }
                 .padding(20)
