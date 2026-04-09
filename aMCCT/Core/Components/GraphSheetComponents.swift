@@ -1,9 +1,15 @@
 import Charts
 import SwiftUI
 
+enum GraphChartStyle {
+    case line
+    case bar
+    case area
+}
+
 struct GraphSheetHeaderView: View {
     var body: some View {
-        Text("aMCC progress")
+        Text("Brain level progress")
             .font(.title2.weight(.bold))
             .foregroundStyle(.baseBlacktoWhite)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -68,7 +74,23 @@ struct GraphChartSectionView: View {
     let currentAverage: Double
     let title: String
     let subtitle: String
+    let yAxisLabel: String
+    let yValueLabel: String
+    let yDomain: ClosedRange<Double>
+    let lineColors: [Color]
+    let chartStyle: GraphChartStyle
+    let showWeeklyAverageLine: Bool
+    let weeklyAverageLabel: String
     let onPointSelected: (GraphSheetPoint?) -> Void
+
+    private var yAxisTicks: [Double] {
+        let minY = yDomain.lowerBound
+        let maxY = yDomain.upperBound
+        guard maxY > minY else { return [minY] }
+
+        let step = (maxY - minY) / 4
+        return [0, 1, 2, 3, 4].map { minY + (Double($0) * step) }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -102,37 +124,66 @@ struct GraphChartSectionView: View {
     private var chart: some View {
         Chart {
             ForEach(points) { point in
-                LineMark(
-                    x: .value("Index", point.index),
-                    y: .value("aMCC Level", point.level)
-                )
-                .interpolationMethod(.catmullRom)
-                .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [.cyan, .mint],
-                        startPoint: .leading,
-                        endPoint: .trailing
+                if chartStyle == .line {
+                    LineMark(
+                        x: .value("Index", point.index),
+                        y: .value(yValueLabel, point.level)
                     )
-                )
+                    .interpolationMethod(.catmullRom)
+                    .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: lineColors,
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                } else if chartStyle == .bar {
+                    BarMark(
+                        x: .value("Index", point.index),
+                        y: .value(yValueLabel, point.level)
+                    )
+                    .cornerRadius(4)
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: lineColors,
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                } else {
+                    AreaMark(
+                        x: .value("Index", point.index),
+                        y: .value(yValueLabel, point.level)
+                    )
+                    .interpolationMethod(.catmullRom)
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [lineColors.first?.opacity(0.45) ?? .orange.opacity(0.45), .clear],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                }
 
                 PointMark(
                     x: .value("Index", point.index),
-                    y: .value("aMCC Level", point.level)
+                    y: .value(yValueLabel, point.level)
                 )
-                .symbolSize(72)
-                .foregroundStyle(Color.white)
+                .symbolSize(chartStyle == .line ? 72 : (chartStyle == .bar ? 0 : 64))
+                .foregroundStyle(chartStyle == .line ? Color.white : (lineColors.first ?? .orange))
+                .opacity(chartStyle == .bar ? 0 : 1)
             }
 
-            if selectedRange == .week {
-                RuleMark(y: .value("Weekly average", currentAverage))
+            if showWeeklyAverageLine, selectedRange == .week {
+                RuleMark(y: .value(weeklyAverageLabel, currentAverage))
                     .foregroundStyle(Color.gray.opacity(0.55))
                     .lineStyle(StrokeStyle(lineWidth: 1.5, dash: [4, 4]))
             }
         }
-        .chartYScale(domain: 0...100)
+        .chartYScale(domain: yDomain)
         .chartXAxisLabel(selectedRange == .day ? "Hour" : "Date")
-        .chartYAxisLabel("Level aMCC")
+        .chartYAxisLabel(yAxisLabel)
         .chartXAxis {
             AxisMarks(values: points.map(\.index)) { value in
                 AxisGridLine().foregroundStyle(.clear)
@@ -147,12 +198,12 @@ struct GraphChartSectionView: View {
             }
         }
         .chartYAxis {
-            AxisMarks(position: .leading, values: [0, 25, 50, 75, 100]) { value in
+            AxisMarks(position: .leading, values: yAxisTicks) { value in
                 AxisGridLine().foregroundStyle(.white.opacity(0.08))
                 AxisTick().foregroundStyle(.white.opacity(0.25))
                 AxisValueLabel {
-                    if let integerValue = value.as(Int.self) {
-                        Text("\(integerValue)")
+                    if let numberValue = value.as(Double.self) {
+                        Text("\(Int(numberValue.rounded()))")
                             .font(.caption2.weight(.medium))
                             .foregroundStyle(.baseBlacktoWhite.opacity(0.72))
                     }
@@ -294,6 +345,50 @@ struct GraphAboutView: View {
                 .font(.subheadline)
                 .foregroundStyle(.baseBlacktoWhite.opacity(0.70))
                 .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(18)
+        .background(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(Color.baseBlacktoWhite.opacity(0.08))
+        )
+        .overlay {
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+        }
+    }
+}
+
+struct GraphCulpritAppsView: View {
+    let apps: [CulpritApp]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Application Culprits")
+                .font(.headline.weight(.semibold))
+                .foregroundStyle(.baseBlacktoWhite)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    ForEach(apps) { app in
+                        VStack(spacing: 8) {
+                            Circle()
+                                .fill(Color.baseBlacktoWhite.opacity(0.10))
+                                .frame(width: 52, height: 52)
+                                .overlay {
+                                    Image(systemName: app.symbolName)
+                                        .font(.system(size: 19, weight: .semibold))
+                                        .foregroundStyle(.baseBlacktoWhite)
+                                }
+
+                            Text(app.name)
+                                .font(.caption.weight(.medium))
+                                .foregroundStyle(.baseBlacktoWhite.opacity(0.78))
+                                .lineLimit(1)
+                        }
+                        .frame(width: 72)
+                    }
+                }
+            }
         }
         .padding(18)
         .background(
