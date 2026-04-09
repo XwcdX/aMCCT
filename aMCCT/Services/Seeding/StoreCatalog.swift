@@ -10,7 +10,7 @@ struct StoreCatalogItem {
 }
 
 enum StoreCatalog {
-    static let all: [StoreCatalogItem] = stickers + brainSkins + profileBorders
+    static let all: [StoreCatalogItem] = stickers + wallpaper + profileBorders
 
     // MARK: - Stickers (3)
     static let stickers: [StoreCatalogItem] = [
@@ -40,31 +40,39 @@ enum StoreCatalog {
         )
     ]
 
-    // MARK: - Brain Skins (3)
-    static let brainSkins: [StoreCatalogItem] = [
+    // MARK: - Wallpaper (3)
+    static let wallpaper: [StoreCatalogItem] = [
         .init(
-            id: "skin_crystal",
-            type: .brainSkin,
+            id: "wallpaper_bibi_brain",
+            type: .wallpaper,
             price: 150,
-            name: "Crystal",
-            description: "Cold, clear, unshakeable.",
-            assetName: "skin_crystal"
+            name: "Bibi Brain",
+            description: "Grows with every hard choice.",
+            assetName: "Wallpaper 1"
         ),
         .init(
-            id: "skin_ember",
-            type: .brainSkin,
+            id: "wallpaper_bibi_activities",
+            type: .wallpaper,
             price: 300,
-            name: "Ember",
-            description: "Burning slow. The kind of fire that doesn't go out.",
-            assetName: "skin_ember"
+            name: "Bibi Activities",
+            description: "Built through discipline.",
+            assetName: "Wallpaper 2"
         ),
         .init(
-            id: "skin_void",
-            type: .brainSkin,
+            id: "wallpaper_grit_buddies",
+            type: .wallpaper,
             price: 500,
-            name: "Void",
-            description: "Beyond distraction. Beyond noise. Just signal.",
-            assetName: "skin_void"
+            name: "Grit Buddies",
+            description: "Trained by consistency.",
+            assetName: "Wallpaper 3"
+        ),
+        .init(
+            id: "wallpaper_bibi_tired",
+            type: .wallpaper,
+            price: 700,
+            name: "Bibi Tired",
+            description: "Choose hard. Get stronger.",
+            assetName: "Wallpaper 4"
         )
     ]
 
