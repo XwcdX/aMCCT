@@ -6,6 +6,7 @@ struct TypingTaskView: View {
     var onSuccess: () -> Void
     
     @State private var isFieldFocused = false
+    @State private var wallpaperIndex = Int.random(in: 1...4)
     @Query private var brainStates: [BrainState]
 
     private var currentLevel: Int {
@@ -22,6 +23,7 @@ struct TypingTaskView: View {
             title: "TRAIN YOUR MIND",
             progress: progressValue,
             currentLevel: currentLevel,
+            backgroundImageName: "Wallpaper-\(wallpaperIndex)",
             onCancel: {
                 exit(0)
             }
@@ -89,7 +91,7 @@ extension TypingTaskView {
                 .lineSpacing(8)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.baseBlacktoWhite)
-                .opacity(0.1)
+                .opacity(0.3)
 
             Text(renderedProgressString)
                 .font(.title2.bold())
@@ -105,6 +107,9 @@ extension TypingTaskView {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .opacity(0.011)
         }
+        .padding(.vertical, 24)
+        .padding(.horizontal, 16)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
         .contentShape(Rectangle())
         .onTapGesture {
             if !viewModel.isTaskComplete && !viewModel.isLoading {
