@@ -4,6 +4,7 @@ import SwiftData
 @Model final class BrainState {
     var actualLevel: Int
     var currentLevel: Int
+    var pendingActualProgressSteps: Int
     
     var points: Int
 
@@ -14,6 +15,7 @@ import SwiftData
     init() {
         self.actualLevel             = 1
         self.currentLevel            = 1
+        self.pendingActualProgressSteps = 0
         self.points                  = 3000
         self.dailyLevelIncreaseCount = 0
         self.dailyLevelDecreaseCount = 0

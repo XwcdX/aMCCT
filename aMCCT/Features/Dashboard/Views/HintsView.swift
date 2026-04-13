@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct HintsView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var currentPage = 0
     
     private let steps = [
@@ -36,6 +37,8 @@ struct HintsView: View {
                 currentPage: $currentPage,
                 items: steps,
                 nextTitle: "Next",
+                doneTitle: "Done",
+                onDone: { dismiss() }
             ) { step in
                 PagedCarouselPageView(
                     title: step.title,
