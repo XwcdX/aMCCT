@@ -210,7 +210,7 @@ struct DashboardView: View {
                 .textCase(.uppercase)
                 .tracking(0.8)
 
-            Text("actual: \(state?.actualLevel ?? 1)  current: \(state?.currentLevel ?? 1)  pending: \(state?.pendingActualProgressSteps ?? 0)")
+            Text("actual: \(state?.actualLevel ?? 1)  current: \(state?.currentLevel ?? 1)" )
                 .font(.system(size: 12, weight: .medium, design: .monospaced))
                 .foregroundStyle(.white)
 

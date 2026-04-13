@@ -9,6 +9,7 @@ import SwiftData
     var assetName: String
     var price: Int
     var isPurchased: Bool
+    var isEquipped: Bool
     var purchasedAt: Date?
 
     init(
@@ -26,6 +27,7 @@ import SwiftData
         self.itemDescription = description
         self.assetName       = assetName
         self.isPurchased     = false
+        self.isEquipped     = false
         self.purchasedAt     = nil
     }
 }
