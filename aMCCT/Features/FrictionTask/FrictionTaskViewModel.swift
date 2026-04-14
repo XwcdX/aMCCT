@@ -1,17 +1,17 @@
 import SwiftUI
 import Combine
 
+@Observable
 @MainActor
-final class FrictionTaskViewModel: ObservableObject {
+final class FrictionTaskViewModel {
     var isBackspaceDisabled: Bool {
         taskConfig.constraints.contains(.noBackspace)
     }
     
-    @Published var isTaskComplete = false
-    @Published var isLoading = true
-    
-    @Published var targetPhrase = ""
-    @Published var currentTextEntry = ""
+    var isTaskComplete = false
+    var isLoading = true
+    var targetPhrase = ""
+    var currentTextEntry = ""
     
     private let taskConfig: TypingTaskConfig
     private let promptService: PromptGenerationServicing
@@ -36,7 +36,6 @@ final class FrictionTaskViewModel: ObservableObject {
         isLoading = false
     }
     
-    // MARK: - Typing Logic
     /// Processes text changes
     func handleTypingInput(_ newValue: String) {
         if taskConfig.constraints.contains(.noBackspace) {
@@ -57,7 +56,8 @@ final class FrictionTaskViewModel: ObservableObject {
     }
 
     private func handleTypingFailure() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        Task {
+            try? await Task.sleep(for: .seconds(0.5))
             withAnimation(.easeInOut) {
                 self.currentTextEntry = ""
             }
@@ -82,7 +82,6 @@ final class FrictionTaskViewModel: ObservableObject {
     }
 }
 
-// MARK: - Private Helpers
 private extension FrictionTaskViewModel {
     func validateFullMatch(_ target: String, _ typed: String) -> Bool {
         let targetArray = Array(target)

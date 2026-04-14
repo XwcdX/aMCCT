@@ -4,6 +4,7 @@ import SwiftData
 struct DashboardView: View {
     @Environment(DashboardViewModel.self) private var viewModel
     @Environment(AppCoordinator.self) private var appCoordinator
+    @State private var isHintsPresented: Bool = false
 
     var body: some View {
         GeometryReader { geo in
@@ -21,6 +22,34 @@ struct DashboardView: View {
                             appCoordinator.showGraph()
                         }
                     
+//                    #if DEBUG
+//                    ActionButton(
+//                        "Debug +1",
+//                        icon: "plus.circle.fill",
+//                        color: .orange,
+//                        shape: .capsule,
+//                        size: .compact,
+//                        isFullWidth: false
+//                    ) {
+//                        viewModel.debugIncrementLevel()
+//                    }
+//                    .padding(.top, 4)
+//
+//                    ActionButton(
+//                        "Reset SwiftData",
+//                        icon: "trash.fill",
+//                        color: .red,
+//                        shape: .capsule,
+//                        size: .compact,
+//                        isFullWidth: false
+//                    ) {
+//                        viewModel.resetSwiftData()
+//                    }
+//
+//                    debugLevelStatus
+//                    #endif
+                    
+                    
                     StoreView()
                         .environment(viewModel)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -33,6 +62,9 @@ struct DashboardView: View {
             )) {
                 SettingsSheet()
                     .environment(viewModel)
+            }
+            .sheet(isPresented: $isHintsPresented) {
+                HintsView()
             }
             .alert("Decrease level?", isPresented: Binding(
                 get: { viewModel.isDecreaseConfirmPresented },
@@ -50,17 +82,26 @@ struct DashboardView: View {
     
     private var topBar: some View {
         HStack {
-            VStack{
-                Text("Hardwayyy")
-                    .font(.title2)
-                    .bold()
-                    .foregroundStyle(.baseBlacktoWhite)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Hardwayyy")
+                        .font(.title2)
+                        .bold()
+                        .foregroundStyle(.baseBlacktoWhite)
+                    
+                    Text("Your aMCC Brain")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.baseBlacktoWhite)
+                }
                 
-                Text("Your aMCC Brain")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(.baseBlacktoWhite)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                Button {
+                    isHintsPresented = true
+                } label: {
+                    Image(systemName: "questionmark.circle")
+                        .foregroundStyle(.baseBlacktoWhite)
+                        .font(.system(size: 18))
+                }
+                .buttonStyle(.plain)
             }
             
             Spacer()
@@ -157,6 +198,31 @@ struct DashboardView: View {
             .fill(Color.white.opacity(0.1))
             .frame(width: 1, height: 32)
     }
+
+    #if DEBUG
+    private var debugLevelStatus: some View {
+        let state = viewModel.brainState
+
+        return VStack(alignment: .leading, spacing: 6) {
+            Text("Debug level state")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(.white.opacity(0.7))
+                .textCase(.uppercase)
+                .tracking(0.8)
+
+            Text("actual: \(state?.actualLevel ?? 1)  current: \(state?.currentLevel ?? 1)" )
+                .font(.system(size: 12, weight: .medium, design: .monospaced))
+                .foregroundStyle(.white)
+
+            Text(viewModel.dailyCapsDescription)
+                .font(.system(size: 12, weight: .regular))
+                .foregroundStyle(.white.opacity(0.75))
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 20)
+        .padding(.top, 2)
+    }
+    #endif
 }
 
 #Preview {
