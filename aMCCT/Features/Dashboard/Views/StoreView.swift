@@ -87,16 +87,15 @@ struct StoreView: View {
             }
         }
         .sheet(isPresented: $isCollectionPresented) {
-            CollectionSheetView(items: purchasedItems)
-                .presentationDetents([.medium, .large])
+            CollectionSheetView(items: purchasedItems) { item in
+                viewModel.equipItem(item)
+            }
+            .presentationDetents([.medium, .large])
         }
     }
 
-    // MARK: - Store header
-
     private var storeHeader: some View {
         HStack {
-            // Collection button — top left
             Button {
                 isCollectionPresented = true
             } label: {
@@ -117,7 +116,6 @@ struct StoreView: View {
 
             Spacer()
 
-            // Points balance — top right
             HStack(spacing: 5) {
                 Image(systemName: "sparkle")
                     .font(.system(size: 12, weight: .bold))

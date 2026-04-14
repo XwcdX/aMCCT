@@ -4,11 +4,32 @@ import SwiftData
 struct DashboardView: View {
     @Environment(DashboardViewModel.self) private var viewModel
     @Environment(AppCoordinator.self) private var appCoordinator
+    @Environment(\.colorScheme) private var colorScheme
+    @Query(filter: #Predicate<StoreItem> { $0.isEquipped }) private var equippedItems: [StoreItem]
     @State private var isHintsPresented: Bool = false
+
+    private var equippedWallpaper: String? {
+        equippedItems.first(where: { $0.type == .wallpaper })?.assetName
+    }
 
     var body: some View {
         GeometryReader { geo in
             ZStack(alignment: .top) {
+                if let wallpaper = equippedWallpaper {
+                    Image(wallpaper)
+                        .resizable()
+                        .scaledToFill()
+                        .ignoresSafeArea()
+                        .overlay {
+                            (colorScheme == .dark ? Color.black : Color.white)
+                                .opacity(0.7)
+                                .ignoresSafeArea()
+                        }
+                } else {
+                    Color.baseWhitetoblack
+                        .ignoresSafeArea()
+                }
+
                 VStack(spacing: 15) {
                     topBar
                     
@@ -17,38 +38,10 @@ struct DashboardView: View {
                         .frame(height: geo.size.height * 0.25)
                     
                     statsStrip
-                        .padding(.horizontal,20)
+                        .padding(.horizontal, 20)
                         .onTapGesture {
                             appCoordinator.showGraph()
                         }
-                    
-//                    #if DEBUG
-//                    ActionButton(
-//                        "Debug +1",
-//                        icon: "plus.circle.fill",
-//                        color: .orange,
-//                        shape: .capsule,
-//                        size: .compact,
-//                        isFullWidth: false
-//                    ) {
-//                        viewModel.debugIncrementLevel()
-//                    }
-//                    .padding(.top, 4)
-//
-//                    ActionButton(
-//                        "Reset SwiftData",
-//                        icon: "trash.fill",
-//                        color: .red,
-//                        shape: .capsule,
-//                        size: .compact,
-//                        isFullWidth: false
-//                    ) {
-//                        viewModel.resetSwiftData()
-//                    }
-//
-//                    debugLevelStatus
-//                    #endif
-                    
                     
                     StoreView()
                         .environment(viewModel)
@@ -117,7 +110,6 @@ struct DashboardView: View {
                             .font(.system(size: 16))
                             .foregroundStyle(.baseWhitetoblack)
                     }
-                // TODO: swap Circle for equipped profile border asset
             }
         }
         .padding(.horizontal, 20)
@@ -173,8 +165,6 @@ struct DashboardView: View {
     private func culpritCell(tokenData: Data?, label: String, accent: Color) -> some View {
         VStack(spacing: 3) {
             if let _ = tokenData {
-                // TODO: Decode tokenData into ApplicationToken and use FamilyControls Label()
-                // Example: Label(token).labelStyle(.iconOnly)
                 Image(systemName: "app.fill")
                     .font(.system(size: 22, weight: .regular))
                     .foregroundStyle(accent)
@@ -236,6 +226,8 @@ struct DashboardView: View {
     viewModel.load()
     
     let coordinator = AppCoordinator()
+    
+    // tambahin sudah buy wallpaper bibi stacks
 
     return DashboardView()
         .environment(viewModel)

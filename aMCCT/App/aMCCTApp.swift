@@ -123,7 +123,7 @@ struct aMCCTApp: App {
     }
 
     private func checkForPendingTaks() {
-        guard let defaults = UserDefaults(suiteName: "group.com.oxy.aMCCT")
+        guard let defaults = UserDefaults(suiteName: "group.com.oxylion.aMCCT")
         else { return }
         let needTask = defaults.bool(forKey: "aMCCT.needsFrictionTask")
         if needTask {
@@ -133,7 +133,7 @@ struct aMCCTApp: App {
     }
 
     private func reShieldIfNeeded() {
-        guard let defaults = UserDefaults(suiteName: "group.com.oxy.aMCCT")
+        guard let defaults = UserDefaults(suiteName: "group.com.oxylion.aMCCT")
         else { return }
         guard defaults.bool(forKey: "aMCCT.pendingReShield") else { return }
         defaults.set(false, forKey: "aMCCT.pendingReShield")
