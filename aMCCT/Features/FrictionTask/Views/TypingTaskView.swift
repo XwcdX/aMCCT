@@ -6,8 +6,8 @@ struct TypingTaskView: View {
     var onSuccess: () -> Void
     
     @State private var isFieldFocused = false
-    @State private var wallpaperIndex = Int.random(in: 1...4)
     @Query private var brainStates: [BrainState]
+    @Query(filter: #Predicate<StoreItem> { $0.isEquipped }) private var equippedItems: [StoreItem]
 
     private var currentLevel: Int {
         brainStates.first?.currentLevel ?? 1
@@ -18,12 +18,16 @@ struct TypingTaskView: View {
         return Double(viewModel.currentTextEntry.count) / Double(viewModel.targetPhrase.count)
     }
 
+    private var equippedWallpaper: String? {
+        equippedItems.first(where: { $0.type == .wallpaper })?.assetName
+    }
+
     var body: some View {
         FrictionCard(
             title: "TRAIN YOUR MIND",
             progress: progressValue,
             currentLevel: currentLevel,
-            backgroundImageName: "Wallpaper-\(wallpaperIndex)",
+            backgroundImageName: equippedWallpaper,
             onCancel: {
                 exit(0)
             }
@@ -68,7 +72,6 @@ struct TypingTaskView: View {
             }
             .onChange(of: viewModel.isTaskComplete) { _, complete in
                 if complete {
-                    // Smoothly dismiss keyboard
                     withAnimation { isFieldFocused = false }
                 }
             }
