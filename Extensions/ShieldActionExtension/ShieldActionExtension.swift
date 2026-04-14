@@ -4,7 +4,7 @@ import UserNotifications
 import SharedKit
 
 class ShieldActionExtension: ShieldActionDelegate {
-    private let appGroupID = "group.com.oxy.aMCCT"
+    private let appGroupID = "group.com.oxylion.aMCCT"
 
     override func handle(
         action: ShieldAction,

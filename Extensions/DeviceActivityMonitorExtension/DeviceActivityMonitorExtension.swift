@@ -59,7 +59,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             )
         }
 
-        if let defaults = UserDefaults(suiteName: "group.com.oxy.aMCCT") {
+        if let defaults = UserDefaults(suiteName: "group.com.oxylion.aMCCT") {
             defaults.set(true, forKey: "aMCCT.pendingReShield")
             defaults.synchronize()
         }

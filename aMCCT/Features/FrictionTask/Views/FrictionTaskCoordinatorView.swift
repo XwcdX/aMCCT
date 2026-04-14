@@ -40,7 +40,7 @@ struct FrictionTaskCoordinatorView: View {
     }
 
     private func unlockAndReturn() async {
-        guard let defaults = UserDefaults(suiteName: "group.com.oxy.aMCCT") else {
+        guard let defaults = UserDefaults(suiteName: "group.com.oxylion.aMCCT") else {
             print("unlockAndReturn: failed to get UserDefaults")
             return
         }
