@@ -15,7 +15,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D66346092F705C0600EB2AA7"
+               BlueprintIdentifier = "D6D237732F8848EA00084B5A"
                BuildableName = "DeviceActivityMonitorExtension.appex"
                BlueprintName = "DeviceActivityMonitorExtension"
                ReferencedContainer = "container:aMCCT.xcodeproj">
