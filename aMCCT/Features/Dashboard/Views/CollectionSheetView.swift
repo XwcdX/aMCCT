@@ -2,6 +2,7 @@ import SwiftUI
 
 struct CollectionSheetView: View {
     let items: [StoreItem]
+    var onEquip: (StoreItem) -> Void
 
     @State private var selectedType: StoreItemType = .sticker
 
@@ -46,15 +47,16 @@ struct CollectionSheetView: View {
                         ScrollView {
                             LazyVGrid(columns: columns, spacing: 12) {
                                 ForEach(visibleItems, id: \.id) { item in
-                                    StoreItemCard(
+                                    CollectionItemCard(
                                         imageName: item.assetName,
                                         title: item.name,
                                         bodyText: item.itemDescription ?? "Owned item",
-                                        buyTitle: "Owned",
-                                        buyButtonColor: .gray,
-                                        isBuyEnabled: false,
-                                        isLocked: true
+                                        equipTitle: item.isEquipped ? "Unequip" : "Equip",
+                                        equipButtonColor: item.isEquipped ? .red : .blue,
+                                        isEquipEnabled: true,
+                                        isLocked: false
                                     ) {
+                                        onEquip(item)
                                     }
                                 }
                             }
@@ -145,6 +147,5 @@ struct CollectionSheetView: View {
         )
     ]
 
-    return CollectionSheetView(items: previewItems)
+    return CollectionSheetView(items: previewItems) { _ in }
 }
-

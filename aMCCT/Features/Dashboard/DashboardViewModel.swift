@@ -197,6 +197,21 @@ final class DashboardViewModel {
             print("💾 SwiftData Error: Failed to reset store: \(error.localizedDescription)")
         }
     }
+    
+    func equipItem(_ item: StoreItem) {
+        let descriptor = FetchDescriptor<StoreItem>()
+        guard let allItems = try? modelContext.fetch(descriptor) else { return }
+
+        if item.isEquipped {
+            item.isEquipped = false
+        } else {
+            for existingItem in allItems where existingItem.type == item.type {
+                existingItem.isEquipped = false
+            }
+            item.isEquipped = true
+        }
+        save()
+    }
 
     private func currentLevelMax(actual: Int, canIncreaseActualToday: Bool) -> Int {
         let trailingBuffer = canIncreaseActualToday ? 1 : 0
