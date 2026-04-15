@@ -362,14 +362,11 @@ struct GraphCulpritAppsView: View {
                 HStack(spacing: 12) {
                     ForEach(apps) { app in
                         VStack(spacing: 8) {
-                            Circle()
-                                .fill(Color.baseBlacktoWhite.opacity(0.10))
+                            Image(app.imageName)
+                                .resizable()
+                                .scaledToFill()
                                 .frame(width: 52, height: 52)
-                                .overlay {
-                                    Image(systemName: app.symbolName)
-                                        .font(.system(size: 19, weight: .semibold))
-                                        .foregroundStyle(.baseBlacktoWhite)
-                                }
+                                .clipShape(RoundedRectangle(cornerRadius: 11.7, style: .continuous))
 
                             Text(app.name)
                                 .font(.caption.weight(.medium))

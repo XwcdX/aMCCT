@@ -104,11 +104,10 @@ final class GraphSheetViewModel {
 
     var culpritApps: [CulpritApp] {
         [
-            CulpritApp(name: "Instagram", symbolName: "camera.fill"),
-            CulpritApp(name: "YouTube", symbolName: "play.rectangle.fill"),
-            CulpritApp(name: "TikTok", symbolName: "music.note"),
-            CulpritApp(name: "X", symbolName: "bubble.left.and.bubble.right.fill"),
-            CulpritApp(name: "Game", symbolName: "gamecontroller.fill")
+            CulpritApp(name: "Instagram", imageName: "instagram"),
+            CulpritApp(name: "YouTube", imageName: "youtube"),
+            CulpritApp(name: "TikTok", imageName: "tiktok"),
+            CulpritApp(name: "X", imageName: "twitter")
         ]
     }
 
@@ -200,7 +199,7 @@ final class GraphSheetViewModel {
 struct CulpritApp: Identifiable, Hashable {
     let id = UUID()
     let name: String
-    let symbolName: String
+    let imageName: String
 }
 
 enum GraphSheetRange: String, CaseIterable, Hashable {
