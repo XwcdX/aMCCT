@@ -64,10 +64,18 @@ final class DashboardViewModel {
         for event in events {
             if let token = event.appTokenData {
                 frequencies[token, default: 0] += 1
+            } else {
+                print("⚠️ CULPRIT: Found an event, but its appTokenData was nil.")
             }
         }
         
-        return frequencies.max(by: { $0.value < $1.value })?.key
+        if let topCulprit = frequencies.max(by: { $0.value < $1.value }) {
+            print("🏆 CULPRIT: Found top culprit! Token Size: \(topCulprit.key.count) bytes.")
+            return topCulprit.key
+        } else {
+            print("🤷‍♂️ CULPRIT: No tokens found in any events.")
+            return nil
+        }
     }
 
     /// Brain level on a 1–100 scale for UI components like BrainSceneView.
@@ -194,7 +202,7 @@ final class DashboardViewModel {
             StoreSeeder.seed(context: modelContext)
             brainState = loadOrCreateBrainState()
         } catch {
-            print("💾 SwiftData Error: Failed to reset store: \(error.localizedDescription)")
+            print("SwiftData Error: Failed to reset store: \(error.localizedDescription)")
         }
     }
     
@@ -226,9 +234,9 @@ final class DashboardViewModel {
     private func save() {
         do {
             try modelContext.save()
-            print("💾 BrainState saved: actualLevel=\(brainState?.actualLevel ?? -1), currentLevel=\(brainState?.currentLevel ?? -1), points=\(brainState?.points ?? -1), dailyIncreases=\(brainState?.dailyLevelIncreaseCount ?? -1), dailyDecreases=\(brainState?.dailyLevelDecreaseCount ?? -1)")
+            print("BrainState saved: actualLevel=\(brainState?.actualLevel ?? -1), currentLevel=\(brainState?.currentLevel ?? -1), points=\(brainState?.points ?? -1), dailyIncreases=\(brainState?.dailyLevelIncreaseCount ?? -1), dailyDecreases=\(brainState?.dailyLevelDecreaseCount ?? -1)")
         } catch {
-            print("💾 SwiftData Error: Failed to save context: \(error.localizedDescription)")
+            print("SwiftData Error: Failed to save context: \(error.localizedDescription)")
         }
     }
 

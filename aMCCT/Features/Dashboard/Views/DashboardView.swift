@@ -1,5 +1,8 @@
 import SwiftUI
+import SharedKit
+import ManagedSettings
 import SwiftData
+import FamilyControls
 
 struct DashboardView: View {
     @Environment(DashboardViewModel.self) private var viewModel
@@ -125,15 +128,11 @@ struct DashboardView: View {
                 accent: .cyan
             )
             
-            divider
-            
             statCell(
                 value: "\(viewModel.totalFrictionsCount)",
                 label: "Opened",
                 accent: .white.opacity(0.8)
             )
-            
-            divider
             
             culpritCell(
                 tokenData: viewModel.culpritToken,
@@ -164,11 +163,38 @@ struct DashboardView: View {
     
     private func culpritCell(tokenData: Data?, label: String, accent: Color) -> some View {
         VStack(spacing: 3) {
-            if let _ = tokenData {
-                Image(systemName: "app.fill")
-                    .font(.system(size: 22, weight: .regular))
-                    .foregroundStyle(accent)
+            if let data = tokenData {
+                if let target = try? JSONDecoder().decode(PendingUnlockTarget.self, from: data) {
+                    switch target.type {
+                    case .app:
+                        if let appToken = try? JSONDecoder().decode(ApplicationToken.self, from: target.tokenData) {
+                            Label(appToken)
+                                .labelStyle(.iconOnly)
+                                .frame(width: 22, height: 22)
+                        }
+                    case .category:
+                        if let categoryToken = try? JSONDecoder().decode(ActivityCategoryToken.self, from: target.tokenData) {
+                            Label(categoryToken)
+                                .labelStyle(.iconOnly)
+                                .frame(width: 22, height: 22)
+                        }
+                    case .webDomain:
+                        if let webToken = try? JSONDecoder().decode(WebDomainToken.self, from: target.tokenData) {
+                            Label(webToken)
+                                .labelStyle(.iconOnly)
+                                .frame(width: 22, height: 22)
+                        }
+                    }
+                    
+                } else {
+                    // Failed to decode the wrapper
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 22))
+                        .foregroundStyle(.yellow)
+                }
+                
             } else {
+                // No data exists yet
                 Image(systemName: "app.dashed")
                     .font(.system(size: 22, weight: .regular))
                     .foregroundStyle(accent.opacity(0.5))
@@ -183,12 +209,6 @@ struct DashboardView: View {
         .frame(maxWidth: .infinity)
     }
     
-    private var divider: some View {
-        Rectangle()
-            .fill(Color.white.opacity(0.1))
-            .frame(width: 1, height: 32)
-    }
-
     #if DEBUG
     private var debugLevelStatus: some View {
         let state = viewModel.brainState
@@ -228,7 +248,6 @@ struct DashboardView: View {
     let coordinator = AppCoordinator()
     
     // tambahin sudah buy wallpaper bibi stacks
-
     return DashboardView()
         .environment(viewModel)
         .environment(coordinator)

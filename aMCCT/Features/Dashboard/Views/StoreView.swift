@@ -40,6 +40,7 @@ struct StoreView: View {
         VStack(spacing: 0) {
             VStack(spacing: 15) {
                 storeHeader
+                    .padding(.top, 17)
                 
                 SegmentedControl(
                     selection: $selectedType,

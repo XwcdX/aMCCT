@@ -21,7 +21,12 @@ struct FrictionTaskCoordinatorView: View {
                         config: config,
                         promptService: FoundationPromptService()
                     ), onSuccess: {
-                        appEnvironment.dashboardViewModel.recordFrictionCompleted(taskType: "Typing")
+                        let defaults = UserDefaults(suiteName: "group.com.oxylion.aMCCT")
+                        let tokenData = defaults?.data(forKey: "aMCCT.pendingUnlockToken")
+                        appEnvironment.dashboardViewModel.recordFrictionCompleted(
+                            appTokenData: tokenData,
+                            taskType: "Typing"
+                        )
                         coordinator.taskCompleted()
                         Task { await unlockAndReturn() }
                     }
@@ -47,15 +52,9 @@ struct FrictionTaskCoordinatorView: View {
 
         defaults.synchronize()
 
-        guard let tokenData = defaults.data(forKey: "aMCCT.pendingUnlockToken") else {
-            print("unlockAndReturn: no pending token found")
-            return
-        }
+        guard let tokenData = defaults.data(forKey: "aMCCT.pendingUnlockToken") else {return}
 
-        guard let target = try? JSONDecoder().decode(PendingUnlockTarget.self, from: tokenData) else {
-            print("unlockAndReturn: failed to decode target, data size: \(tokenData.count)")
-            return
-        }
+        guard let target = try? JSONDecoder().decode(PendingUnlockTarget.self, from: tokenData) else {return}
 
         defaults.removeObject(forKey: "aMCCT.pendingUnlockToken")
         defaults.synchronize()
